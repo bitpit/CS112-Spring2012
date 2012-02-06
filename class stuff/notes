@@ -1,0 +1,45 @@
+2/1/11
+Data Types - Primitives
+     Integers - whole numbers that are positive or negative w/o a decimal pt.
+     Long - integer which can be bigger - will have an L at the end of it
+     	  python deals with these automatically apparently
+     Floating point - means there is a decimal point:w/o this, will give whole #
+     Booleans - true/false & and/or statements 
+     Strings - pretty much whatever you want inside of quotation marks
+Why do we care about this shit?
+    You need to have a way of storing information - thats what data types allow
+Variables - something used to store data; if you have to solve for it, the comp
+    does it automatically for you
+    Don't have to specify what type of variable you are using*
+Equal signs are assignment statements - whatever is on the left side will
+      get the value on the left side if they're seperated by an equals sign
+Cant have mathematical symbols in name, cant start variable name with #,
+     and also there are special reserved words that cant be used for variable
+     names
+"Type" - print type(sixteen) - will display the data type of variable "sixteen"
++ will add things together in code, - will subtract, * will multiply, / will
+    divide, // will do integer division regardless of the type, ** will do ex-
+    ponential equations, % will give the remainder <- all basic symbols
+Concatination - sticks multiple things together into a singal string
+Shortcut expressions -> +=, *=, /=, -=/ %=
+Strings - cannot be interperted by the computer, unlike numbers - knows of the
+    characters, but can't really do anything with them other than print em
+    	Can do either use (') or double (") quotation marks 
+	Single means no apostophe
+    Strings are immutable - once we create strings, they cannot be changed or
+    	reset - they are replaced yet the old one remains
+Anything gotten from raw input is a string - to convert them to a string, just
+    say variable=int(variable):or say variable=float(variable)
+
+2/6/11
+Flow control - if statement
+     "If its raining outside, I will get wet. Else I will not get wet.
+     Branch how the program runs
+Loops - work off of conditionals; if something is true, then this will happen
+      otherwise something else will happen; true/false test
+Can use all comparisons like >, <, >=, <=, != (not equal), and ==
+    == is comparative equal; returns true or false if the things are equals
+    equals to; whereas = is an assignment statement
+    AND, OR, and NOT are written in plainspeak rather than &&, ||, etc.
+#then we worked on firstgame.py
+      completed our first game loop in firstgame.py
