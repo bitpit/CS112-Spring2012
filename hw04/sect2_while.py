@@ -5,20 +5,23 @@ print "Section 2:  Loops"
 print "-----------------------------"
 
 # 1. Keep getting a number from the input (num) until it is a multiple of 3.
-num = 0
+num = int(raw_input("Please enter a multiple of 3: "))     
+ 
+while (num%3!=0):
+    print "That's not a multiple of 3! Try again!"
+    num = int(raw_input("Please enter a multiple of 3: "))
+    
 
-print "1.", num
 
-# 2. Countdown from the given number to 0 by threes. 
-#    Example:
-#      12...
-#      9...
-#      6...
-#      3...
-#      0
+#print "1.", num
 
-print "2. Countdown from", num
-#CODE GOES HERE
+while (num!=0):
+    print num
+    num = num-3
+print "0"
+#print "we have liftoff"
+
+#print "2. Countdown from", num
 
 
 # 3. [ADVANCED] Get another num.  If num is a multiple of 3, countdown 
