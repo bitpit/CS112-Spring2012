@@ -10,9 +10,9 @@ n = int(n)
 r = int(n%2)
 nd = str(n)
 if r==0:
-    print "1. Your number, "+nd+", is even."
+    print "1. Your number, %s, is even." %n
 else:
-    print "1. Your number, "+nd+", is odd."
+    print "1. Your number, %s, is odd." %n
 
 
 # 2. If n is odd, double it

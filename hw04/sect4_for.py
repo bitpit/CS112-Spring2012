@@ -27,7 +27,7 @@ print "2. The even numbers you entered are "+str(evens)
 # 3. Does nums only contain even numbers? 
 only_even = False
 for x in nums:
-    if (x%2!=0):
+    if (x%2=0):
         only_even = True
 
 print "3.",      #this bit is part of the fun!

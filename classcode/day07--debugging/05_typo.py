@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
-n = it(raw_inpt("Enter a number: "))
+n = int(raw_input("Enter a number: "))
 
-if n%2 == 0:
+if n%2 == 0 & n != 0:
     print "n is even"
-else:
+elif n%2 > 0:
     print "n is odd"
+if n == 0:
+    print "n is zero"
+
 print "that's all for now"

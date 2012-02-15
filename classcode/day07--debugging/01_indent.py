@@ -4,6 +4,6 @@ n = int(raw_input("Enter a number: "))
 
 if n%2 == 0:
     print "n is even"
- else:
+else:
     print "n is odd"
 print "that's all for now"

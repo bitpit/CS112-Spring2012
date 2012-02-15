@@ -1,5 +1,6 @@
 #!/usr/bin/env
 
-n = int(raw_input("Enter your name:  "))
+n = raw_input("Enter your name:  ")
 
-print "If you can see this, your name is a number"
+print "Your name is %s." %n
+

@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
-n = int(raw_input("Enter a number equal to 0:  "))
-
-print "20 /", n, "is", 20/n
+n = 0
+while n == 0:
+    n = int(raw_input("Enter a number greater than 0:  "))
+    if n == 0:
+        print "That's zero! Try again."
+        
+print "20 /", n, "is", 20/(float (n))
