@@ -4,7 +4,7 @@ swears = [
     ['ass', 'butt'],
     ['fuck', 'fudge'],
     ['shit', 'poo'],
-    ['piss', 'tinkle']
+    ['piss', ' tinkle']
 ]
 
 
