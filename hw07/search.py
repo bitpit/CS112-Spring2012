@@ -25,17 +25,10 @@ x = int(raw_input("Which number should I find: "))
 min = 0
 max = len(nums)-1
 
-print max, " max"
-print min, " min"
-print nums, " nums"
 
 while min<=max:
     middle = ((min + max) / 2)
     check = nums[middle]
-    print middle, " middle "
-    print min, " min"
-    print max, " max"
-    print check, " check"
     if check == x:
         break
     elif check < x:
