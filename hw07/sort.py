@@ -1,25 +1,23 @@
 #!/usr/bin/env python
 """
 Selection sort
-
-This is my selection sort, it's not working right!!!
-I used this:
-    http://en.wikipedia.org/wiki/Selection_sort
+by Evan Ricketts
 """
+
 from hwtools import input_nums
 
-nums = inputnums()
+nums = input_nums()
 
 print "Before sort:"
 print nums
 
-N=len(nums)-1
-for x in range(N)
-    p=x
-    for i in range(x+1 N):
-        if nums[i]<nums[p]:
-            pos=i
-   nums[x],nums[p]=nums[p],nums[x]
+n = len(nums)
+for x in range(0, n):
+    min=x
+    for i in range(x+1, n):
+        if nums[i]<nums[min]:
+            min = i
+    nums[x],nums[min]=nums[min],nums[x]
 
 print "After sort:"
 print nums
