@@ -7,5 +7,24 @@
 #       pt: list of 2 numbers (x,y)
 #       box: list of 4 numbers (x,y,w,h).  x,y is the top left point.  w,h is the width and height
 
-# def point_in_box(pt, box):
+def point_in_box(pt, box):
+    pointIn = True
+    if pt[0] >= (box[2]+box[0]):
+        pointIn = False
+    if pt[1] >= (box[3]+box[1]):
+        pointIn = False
+    if pt[0] < box[0]:
+        pointIn = False
+    if pt[1] < box[1]:
+        pointIn = False
+    
+    if pointIn == True:
+        print "Its in the box"
+    else:
+        print "Its not in the box"
 
+
+pt=[15,20]
+box=[10,10,10,10]
+
+point_in_box(pt, box)

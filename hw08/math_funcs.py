@@ -3,13 +3,13 @@
 import math
 
 # Distance formula
-#   calculate a function called "distance" to calculate the distance between two points.
-#   http://www.purplemath.com/modules/distform.htm
-#   ex: 
-#      >>> distance((0,0), (3,4))
-#      5
+def distance((a, b), (x,y)):
+    d1 = math.fabs(b-y)
+    d2 = math.fabs(a-x)
+    distance = math.sqrt((d1*d1)+(d2*d2))
+    print distance
 
-# def distance(a, b):
+distance((-4,-10), (4, 5))
 
 
 # ADVANCED

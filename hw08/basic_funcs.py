@@ -1,38 +1,42 @@
 #!/usr/bin/env python
 
-# Create a greeter
-#    create a greeter that says hello to someone in all lower case.  Use print statements
-#
-#  ex:
-#   >>> greeter("paul")
-#   hello, paul
-#   >>> greeter(3)
-#   hello, 3
-#   >>> greeter("WORLD")
-#   hello, world
+# Make a greeter
+def greeter(name):
+    name = str(name)
+    print_name = name.lower()
+    return "hello, %s" %print_name
 
-# def greeter(name):
+print greeter()
 
 
 # Draw a box
-#    given a width and a height, draw a box in the terminal.  Use print statements
-#
-#  ex:
-#    >>> box("apples", -3)
-#    Error: Invalid Dimensions
-#    >>> box(1,1)
-#    +
-#    >>> box(4,2)
-#    +--+
-#    +--+
-#    >>> box(3,3)
-#    +-+
-#    | |
-#    +-+
-
-# def box(w,h):
-
-
+def box(w,h):
+    wholder = w
+    h2 = h
+    if w < 1 or h < 1:
+        print "Error: Invalid Dimensions"
+    while h > 0:
+        if h == 1 or h == h2:
+            print "+",
+            w -= 1
+            h -= 1
+            while w > 1:
+                print "-",
+                w -= 1
+            if h > 0 or w > 0:
+                print "+",
+                print
+        w = wholder
+        while h > 1:    
+            print "|",
+            w -= 1
+            while w > 1:
+                print " ",
+                w -= 1
+            print "|",
+            h -= 1
+            print
+            w = wholder
 
 # ADVANCED
 # Draw a Festive Tree
