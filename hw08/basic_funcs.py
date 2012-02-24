@@ -6,8 +6,6 @@ def greeter(name):
     print_name = name.lower()
     return "hello, %s" %print_name
 
-print greeter()
-
 
 # Draw a box
 def box(w,h):

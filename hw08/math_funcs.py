@@ -7,9 +7,7 @@ def distance((a, b), (x,y)):
     d1 = math.fabs(b-y)
     d2 = math.fabs(a-x)
     distance = math.sqrt((d1*d1)+(d2*d2))
-    print distance
-
-distance((-4,-10), (4, 5))
+    return distance
 
 
 # ADVANCED

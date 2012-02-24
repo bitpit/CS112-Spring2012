@@ -19,12 +19,12 @@ def point_in_box(pt, box):
         pointIn = False
     
     if pointIn == True:
-        print "Its in the box"
+        return True
     else:
-        print "Its not in the box"
+        return False
 
 
-pt=[15,20]
+pt=[12,12]
 box=[10,10,10,10]
 
-point_in_box(pt, box)
+print point_in_box(pt, box)
