@@ -13,28 +13,35 @@ def box(w,h):
     h2 = h
     if w < 1 or h < 1:
         print "Error: Invalid Dimensions"
-    while h > 0:
-        if h == 1 or h == h2:
-            print "+",
-            w -= 1
-            h -= 1
-            while w > 1:
-                print "-",
-                w -= 1
-            if h > 0 or w > 0:
+    else:
+        while h > 0:
+            if h == 1 or h == h2:
                 print "+",
-                print
-        w = wholder
-        while h > 1:    
-            print "|",
-            w -= 1
-            while w > 1:
-                print " ",
                 w -= 1
-            print "|",
-            h -= 1
-            print
-            w = wholder
+                h -= 1
+                while w > 1:
+                    print "-",
+                    w -= 1
+                if h > 1 or w > 0:
+                    print "+",
+                    print
+                elif h == 1:
+                    print
+                    print "+",
+                    return
+                w = wholder
+                while h > 1:    
+                    print "|",
+                    w -= 1
+                    while w > 1:
+                        print " ",
+                        w -= 1
+                    print "|",
+                    h -= 1
+                    print
+                    w = wholder
+
+
 
 # ADVANCED
 # Draw a Festive Tree
