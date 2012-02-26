@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """
 tron.py
-
-The simple game of tron with two players.  Press the space bar to start the game.  Player 1 (red) is controlled with WSAD and player 2 (blue) is controlled with the arrow keys.  Once the game is over, press space to reset and then again to restart.  Escape quits the program.
 """
 
 import pygame
@@ -16,53 +14,43 @@ from pygame.locals import *
 pygame.init()
 pygame.font.init()
 
-
-#colors & such
-BLACK = (0,0,0)
-RED = (255,0,0)
-BLUE = (0,0,255)
-WIDTH = 2
-
-p1point,p2point = 0,0
-loser = 1
-
 #inits for screen stuff
 screen = pygame.display.set_mode((600,600))
 clock = pygame.time.Clock()
 done = False
 screen_bounds = screen.get_rect()
 
-screen.fill((BLACK))
-
-#player movement
-p1xdir = -1
-p1ydir = 0
-
-p2xdir = 1
-p2ydir = 0
-
-p1x, p1y = 485,285
-p2x, p2y = 245,450
-
-p1tail = []
-p2tail = []
-
 
 def pleasedraw(pos, xd, yd, screen, color):
     x,y = pos
-    pygame.draw.line(screen,color,(x,y),(x+xd,y+yd), 5)
+    pygame.draw.line(screen,color,(x,y),(x+xd,y+yd), 14)
     
-def move(px,py,dx,dy,ptail,bounds,l):
+def move(px,py,dx,dy,ptail,l,optail):
     px += dx
     py += dy
     for i in ptail:
-        print i
         if i == ([px,py]):
+            if l == 2:
+                l = 4
+            elif l == 1:
+                l = 3
+    for i in optail:
+        for q in range(1,13):
+            if i == ([px,py]) or i == ([(px-q),(py-q)]) or i == ([(px+q),(py+q)]):
+                if l == 2:
+                    l = 4
+                elif l == 1:
+                    l = 3
+    
+    if px < 1 or px > 599 or py < 1 or py > 599:
+        if l == 2:
+            l = 4
+        elif l == 1:
             l = 3
 
     return px, py, dx, dy, l
-    
 
+def win_screen(winner):
 
 
 def textrenderer(text,x,y,color,fontsize):
@@ -72,8 +60,30 @@ def textrenderer(text,x,y,color,fontsize):
    return
 
 
-#control loop
+#program loop
 while not done:
+
+    #player movement inits
+    p1xdir = -2
+    p1ydir = 0
+
+    p2xdir = 2
+    p2ydir = 0
+
+    p1x, p1y = 545,285
+    p2x, p2y = 55,285
+    
+    p1tail = []
+    p2tail = []
+
+    #colors & such inits
+    BLACK = (0,0,0)
+    RED = (255,0,0)
+    BLUE = (0,0,255)
+    p1point,p2point = 0,0
+    loser = 1
+
+    #game loop control
     game = False
     
     screen.fill(BLACK)
@@ -97,51 +107,53 @@ while not done:
     #game loop                    
     while game:
         
-
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN 
                                       and event.key == K_ESCAPE):
-                game = quit()
+                game = False
                 
             #p1 controls
             elif event.type == KEYUP and event.key == K_UP:
-                p1ydir = -1
+                p1ydir = -2
                 p1xdir = 0
             elif event.type == KEYUP and event.key == K_DOWN:
-                p1ydir = 1
+                p1ydir = 2
                 p1xdir = 0
             elif event.type == KEYUP and event.key == K_LEFT:
                 p1ydir = 0
-                p1xdir = -1
+                p1xdir = -2
             elif event.type == KEYUP and event.key == K_RIGHT:
                 p1ydir = 0
-                p1xdir = 1
+                p1xdir = 2
             #p2 controls
             elif event.type == KEYUP and event.key == K_w:
-                p2ydir = -1
+                p2ydir = -2
                 p2xdir = 0
             elif event.type == KEYUP and event.key == K_s:
-                p2ydir = 1
+                p2ydir = 2
                 p2xdir = 0
             elif event.type == KEYUP and event.key == K_a:
                 p2ydir = 0
-                p2xdir = -1
+                p2xdir = -2
             elif event.type == KEYUP and event.key == K_d:
                 p2ydir = 0
-                p2xdir = 1
+                p2xdir = 2
 
         #p1 movement
-        p1x,p1y,p1xdir,p1ydir,loser = move(p1x,p1y, p1xdir, p1ydir, p1tail, screen_bounds, loser)
+        p1x,p1y,p1xdir,p1ydir,loser = move(p1x,p1y, p1xdir, p1ydir, p1tail,1,p2tail)
         
         if loser == 3:
+            win_screen(3)
             game = False
         
         p1tail.append([p1x,p1y])
 
+        
         #p2movement
-        p2x,p2y,p2xdir,p2ydir,loser = move(p2x,p2y,p2xdir,p2ydir,p2tail,screen_bounds,loser)
+        p2x,p2y,p2xdir,p2ydir,loser = move(p2x,p2y,p2xdir,p2ydir,p2tail,2,p1tail)
 
-        if loser == 3:
+        if loser == 4:
+            win_screen(4)
             game = False
 
         p2tail.append([p2x,p2y])
@@ -157,7 +169,7 @@ while not done:
         
 
         pygame.display.flip()
-        clock.tick(30000)
+        
 
 
     pygame.display.flip()
