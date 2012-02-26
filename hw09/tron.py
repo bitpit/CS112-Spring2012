@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
 tron.py
+by Evan Ricketts
 """
 
 import pygame
@@ -50,14 +51,54 @@ def move(px,py,dx,dy,ptail,l,optail):
 
     return px, py, dx, dy, l
 
-def win_screen(winner):
-
 
 def textrenderer(text,x,y,color,fontsize):
    font = pygame.font.SysFont("Arial",fontsize)
    rend = font.render(text,1,color)
    screen.blit(rend, (x,y))
    return
+
+def game_over(loser):
+    if loser == 3:
+        l = "Player 1 Wins!"
+        color = (255,0,0)
+    elif loser == 4:
+        l = "Player 2 Wins!"
+        color = (0,0,255)
+    screen.fill((240,255,255))
+    textrenderer(l,100,235,color,60)
+    textrenderer("Game Over",249,195,(0,0,0),20)
+    pygame.display.flip()
+    time.sleep(3)
+
+
+def instructions():
+    screen.fill((0,0,0))
+    textrenderer("TRON",40,40,(0,0,255),30)
+    textrenderer("is a game for two players.",134,49,(255,255,255),22)
+    textrenderer("Each player must avoid the walls and the paths", 42,110,(255,255,255),22)
+    textrenderer("created by their own tail as well as their opponents'",42,135,(255,255,255),22)
+    textrenderer("tail.",42,160,(255,255,255),22)
+
+    textrenderer("Player 1",42,225,(255,0,0),22)
+    textrenderer("steers their craft with the W, A, S & D keys.",130,225,(255,255,255),22)
+
+    textrenderer("Player 2",42,285,(0,0,255),22)
+    textrenderer("steers their craft with the Up, Down, Left &",130,285,(255,255,255),22)
+    textrenderer("Right arrow keys.",42,313,(255,255,255),22)
+    
+    textrenderer("Good luck!!",42,420,(255,255,255),32)
+    textrenderer("(press space to exit)",54,465,(255,255,255),14)
+    
+    pygame.display.flip()
+    
+    x = 0
+    while x == 0:
+        for event in pygame.event.get():
+            if event.type == KEYDOWN and event.key == K_SPACE:
+                return
+            if event.type == KEYDOWN and event.key == K_ESCAPE:
+                return
 
 
 #program loop
@@ -80,7 +121,6 @@ while not done:
     BLACK = (0,0,0)
     RED = (255,0,0)
     BLUE = (0,0,255)
-    p1point,p2point = 0,0
     loser = 1
 
     #game loop control
@@ -92,7 +132,7 @@ while not done:
     textrenderer("a clone",87,220,(238,0,15),50)
     
     textrenderer("press the spacebar to begin",171,420,(249,255,250),20)
-    #textrenderer("or press i for instructions",172,450,(230,230,231),18)
+    textrenderer("or press i for instructions",172,450,(230,230,231),18)
 
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -102,6 +142,8 @@ while not done:
         elif event.type == KEYDOWN and event.key == K_SPACE:
             screen.fill(BLACK)
             game = True
+        elif event.type == KEYDOWN and event.key == K_i:
+            instructions()
 
 
     #game loop                    
@@ -141,22 +183,21 @@ while not done:
 
         #p1 movement
         p1x,p1y,p1xdir,p1ydir,loser = move(p1x,p1y, p1xdir, p1ydir, p1tail,1,p2tail)
-        
-        if loser == 3:
-            win_screen(3)
-            game = False
-        
         p1tail.append([p1x,p1y])
-
+        
+        #gameover?
+        if loser == 3:
+            game_over(loser)
+            game = False
         
         #p2movement
         p2x,p2y,p2xdir,p2ydir,loser = move(p2x,p2y,p2xdir,p2ydir,p2tail,2,p1tail)
-
-        if loser == 4:
-            win_screen(4)
-            game = False
-
         p2tail.append([p2x,p2y])
+
+        #is there a gameover?
+        if loser == 4:
+            game_over(loser)
+            game = False
         
         
         #draw players
@@ -164,12 +205,7 @@ while not done:
             pleasedraw(p1tail[i], p1xdir, p1ydir, screen, BLUE)
         for i in range(len(p2tail)):
             pleasedraw(p2tail[i], p2xdir, p2ydir, screen, RED)
-        
-       
-        
-
         pygame.display.flip()
         
-
 
     pygame.display.flip()
