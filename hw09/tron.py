@@ -29,12 +29,11 @@ def pleasedraw(pos, xd, yd, screen, color):
 def move(px,py,dx,dy,ptail,l,optail):
     px += dx
     py += dy
-    for i in ptail:
-        if i == ([px,py]):
-            if l == 2:
-                l = 4
-            elif l == 1:
-                l = 3
+    if ([px,py] in ptail):
+        if l == 2:
+            l = 4
+        elif l == 1:
+            l = 3
     for i in optail:
         for q in range(1,13):
             if i == ([px,py]) or i == ([(px-q),(py-q)]) or i == ([(px+q),(py+q)]):
@@ -68,9 +67,14 @@ def game_over(loser):
     screen.fill((240,255,255))
     textrenderer(l,100,235,color,60)
     textrenderer("Game Over",249,195,(0,0,0),20)
+    textrenderer("(press space to exit)",240,465,(30,30,30),14)
     pygame.display.flip()
-    time.sleep(3)
-
+    x = 0
+    while x == 0:
+        for event in pygame.event.get():
+            if event.type == KEYDOWN and event.key == K_SPACE:
+                return
+                
 
 def instructions():
     screen.fill((0,0,0))

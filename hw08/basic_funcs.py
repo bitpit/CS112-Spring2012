@@ -42,7 +42,6 @@ def box(w,h):
                     w = wholder
 
 
-
 # ADVANCED
 # Draw a Festive Tree
 #    draw a festive tree based on the specifications.  You will need to discover the arguments 
