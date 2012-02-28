@@ -193,6 +193,7 @@ while not done:
         if loser == 3:
             game_over(loser)
             game = False
+            break
         
         #p2movement
         p2x,p2y,p2xdir,p2ydir,loser = move(p2x,p2y,p2xdir,p2ydir,p2tail,2,p1tail)
@@ -202,6 +203,7 @@ while not done:
         if loser == 4:
             game_over(loser)
             game = False
+            break
         
         
         #draw players
