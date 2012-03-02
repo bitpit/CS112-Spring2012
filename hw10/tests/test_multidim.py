@@ -11,11 +11,19 @@ class FindCoinsTest(unittest.TestCase):
         self.diag[1][1] = 1
         self.diag[3][3] = 1
 
+<<<<<<< Updated upstream
         self.room = [ [0 for i in range(5)] for i in range(5) ]
         self.room[3][4] = 1
         self.room[0][1] = 1
         self.room[2][2] = 1
         self.room[4][1] = 1
+=======
+        self.room = zeros[:]
+        room[3][4] = 1
+        room[0][1] = 1
+        room[2][2] = 1
+        room[4][1] = 1
+>>>>>>> Stashed changes
 
 
     def test_find_coins_empty(self):

@@ -25,26 +25,46 @@ Terms:
 """
 
 from pygame import Rect
+import math
 
-# 1. poly_in_rect
-#      Check to see if the polygon is completely within a given 
-#      rectangle.
-#
-#      returns:  True or False
 
 def poly_in_rect(poly, rect):
-    "check if polygon is within rectangle"
+    count = 0
+    for i in range(len(poly)):
+        x,y = poly[i]
+        if rect.collidepoint(x,y):
+            count += 1
+    if count == len(poly):
+        return True
+    else:
+        return False
 
-
-
-# 2. surround_poly
-#      Create a rectangle which contains the given polygon.  
-#      It should return the smallest possible rectangle 
-#      where poly_in_rect returns True.
-#
-#      returns:  pygame.Rect
 
 def surround_poly(poly):
-    "create a rectangle which surounds a polygon"
+    #make x & y list
+    xes = []
+    yes = []
+    for x in range (0,len(poly)):
+        xes.append(poly[x][0])
+        yes.append(poly[x][1])
+    #sort em
+    for x in range(0, len(xes)):
+        min=x
+        for i in range(x+1, len(xes)):
+            if xes[i]<xes[min]:
+                min = i
+        xes[x],xes[min]=xes[min],xes[x]
+    for x in range(0, len(yes)):
+        min=x
+        for i in range(x+1, len(yes)):
+            if yes[i]<yes[min]:
+                min = i
+        yes[x],yes[min]=yes[min],yes[x]
+    #return a rect based on the sorted lists
+    w = math.fabs(xes[0]) + xes[len(xes)-1] - 1
+    h = math.fabs(yes[0]) + yes[len(yes)-1] + 1
+    return Rect((xes[0],yes[0]), (w,h))
+
+
 
 
