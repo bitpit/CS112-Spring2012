@@ -21,16 +21,16 @@ def print_grid(grid):
 ##############
 ## Settings ##
 ##############
-LIGHTLIGHT_GRAY = 235,235,235
 BLACK = 0,0,0
-LIGHT_GRAY = 215,215,215
-GRAY = 183,183,183
-DARK_GRAY = 149,149,149
-NICE_BLUE = 0,118,189
-NICE_RED = 237,28,36
+WHITE = 255,255,255
+
+TILE_GRAY = 192,192,192 #is also outer border gray
+BORDER_GRAY = 128,128,128#is also tile border bottom/right gray
+
+
 TEAL = 0,255,150
 
-SCREEN_SIZE = 800,600
+SCREEN_SIZE = 340,520
 FPS = 30
 
 
@@ -70,8 +70,86 @@ for y in range(10):
 
 #four should be max numbers of bombs usually - build in exception for 5? max!
 
-           
 print_grid(grid)
 
+###############
+## game loop ##
+###############
 
+clock = pygame.time.Clock()           
+clicked = False
+hover = False
+done = False
+game = False
+pygame.display.set_caption('Minesweeper')
+screen.fill(BLACK)
+quit_rect = pygame.Rect((50,290), (94,40))
+start_rect =  pygame.Rect((50,228), (220,40))
+
+while not done:
     
+    #input
+    for evt in pygame.event.get():
+        if evt.type == QUIT:
+            done = True
+        elif evt.type == KEYDOWN and evt.key == K_ESCAPE:
+            done = True
+        elif evt.type == MOUSEBUTTONDOWN:
+            if hover == start_rect:
+                game = True
+            elif hover == quit_rect:
+                done = True
+                break
+        
+        if start_rect.collidepoint(pygame.mouse.get_pos()):
+            hover = start_rect
+        elif quit_rect.collidepoint(pygame.mouse.get_pos()):
+            hover = quit_rect
+        else:
+            hover = False
+                
+    
+       
+    #draw 'minesweeper'
+    render_font("M",25,77,BORDER_GRAY,105)
+    render_font("inesweeper",84,95,TILE_GRAY,57)
+    pygame.draw.line(screen,BORDER_GRAY,(0,133),(30,133),3)
+    pygame.draw.line(screen,BORDER_GRAY,(80,133),(236,133),3)
+    pygame.draw.line(screen,BORDER_GRAY,(253,133),(340,133),3)
+
+
+    #menu items
+    COLOR1 = WHITE
+    COLOR2 = WHITE
+    if hover == start_rect:
+        COLOR1 = BORDER_GRAY
+    elif hover == quit_rect:
+        COLOR2 = BORDER_GRAY
+    render_font("Start Game",68,230,COLOR1,48)
+    render_font("o",54,239,COLOR1,17)
+    render_font("Quit",68,295,COLOR2,48)
+    render_font("o",54,304,COLOR2,17)
+
+
+
+    while game == True:
+        screen.fill(BLACK)
+
+        #input
+        for evt in pygame.event.get():
+            if evt.type == QUIT:
+                done = True
+                game = False
+            elif evt.type == KEYDOWN and evt.key == K_ESCAPE:
+                done = True
+                game = False
+
+        pygame.display.flip()
+        clock.tick(FPS)
+        
+
+
+
+    #refresh
+    pygame.display.flip()
+    clock.tick(FPS)
