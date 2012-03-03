@@ -17,6 +17,22 @@ def print_grid(grid):
             print val,
         print ""
 
+def flag(x,y):
+   pygame.draw.polygon(screen,(220,0,0),((x+7,y-7),(x,y-8),(x+7,y-14),
+                                          (x+7,y-7)))
+   pygame.draw.line(screen,(220,0,0),(x+6,y-4),(x+6,y-8),2)
+   pygame.draw.line(screen,BLACK,(x+3,y-3),(x+9,y-3),2)
+   pygame.draw.line(screen,BLACK,(x,y),(x+12,y),4)
+
+def bomb(x,y):
+    pygame.draw.circle(screen, BLACK, (x,y), 6)
+    pygame.draw.arc(screen,BLACK,(x+3,y-7,7,7),270,273,3)
+    pygame.draw.rect(screen,(241,234,62),(x+8,y-2,2,2))
+    pygame.draw.rect(screen,(241,234,62),(x+9,y-3,2,2))
+    pygame.draw.rect(screen,(230,0,0),(x+9,y-2,2,2))
+    pygame.draw.rect(screen,(241,234,62),(x+7,y-3,2,2))
+
+
 
 ##############
 ## Settings ##
@@ -87,6 +103,7 @@ quit_rect = pygame.Rect((50,290), (94,40))
 start_rect =  pygame.Rect((50,228), (220,40))
 
 while not done:
+    screen.fill(BLACK)
     
     #input
     for evt in pygame.event.get():
@@ -130,10 +147,10 @@ while not done:
     render_font("Quit",68,295,COLOR2,48)
     render_font("o",54,304,COLOR2,17)
 
-
-
+      
     while game == True:
-        screen.fill(BLACK)
+        screen.fill(TILE_GRAY)
+        bomb(220,200)
 
         #input
         for evt in pygame.event.get():
@@ -141,7 +158,6 @@ while not done:
                 done = True
                 game = False
             elif evt.type == KEYDOWN and evt.key == K_ESCAPE:
-                done = True
                 game = False
 
         pygame.display.flip()
