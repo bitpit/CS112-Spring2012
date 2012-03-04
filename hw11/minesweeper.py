@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-'''
-need to add:
-   comments
-   cascadeing zeros
-'''
 
 import pygame
 from pygame.locals import *
@@ -78,7 +73,7 @@ def draw_grid():
                         TEXT_COLOR = 0,128,0
                         render_font(text,fX+7,fY+4,TEXT_COLOR,31)
                     elif text == '3':
-                        TEXT_COLOR = 0,0,255
+                        TEXT_COLOR = 230,0,0
                         render_font(text,fX+7,fY+4,TEXT_COLOR,31)
                     elif text == '4':
                         Text_COLOR = 0,0,128
@@ -105,6 +100,17 @@ def adjacent_zeros(test_cords):
                             tile_state[test[0]][test[1]] = 1
     
 
+def winner():
+    win_count = 0
+    for p in range(10):
+        for q in range(10):
+            if tile_state[p][q] == 1 and grid[p][q] != 'B':
+                win_count += 1
+    if win_count == 90:
+        return True
+    else:
+        return False
+
 ##############
 ## Settings ##
 ##############
@@ -115,11 +121,10 @@ TILE_GRAY = 192,192,192 #is also outer border gray
 BORDER_GRAY = 128,128,128#is also tile border bottom/right gray
 BG_GRAY = 90,90,90
 
-TEAL = 0,255,150
-
 SCREEN_SIZE = 340,520
 FPS = 30
-
+#test_cords are used to do the adjacent zeros function and the board setup
+test_cords = ((-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,0),(1,1),(1,-1))
 
 ################
 ## initialize ##
@@ -127,77 +132,22 @@ FPS = 30
 pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 
-#make play grids
-grid = [] #logic grid
-tile_state = [] #tile state grid
-tile_rects = [] #tile rectaingle grill
-
-#init grid
-for i in range(10):   
-    row = []
-    for j in range(10):
-        row.append(0)
-    grid.append(row)
-
-#init tile_state (0 for unseen, 1 for uncovered, 2 for flagged)
-for i in range(10):
-    row = []
-    for j in range(10):
-        row.append(0)
-    tile_state.append(row)
-
-count = 0   
-while count < 10:  #while loop inserts bombs in logic grid
-    x = random.randrange(10)
-    y = random.randrange(10)
-    if grid[x][y] == 0:
-        grid[x][y] = 'B'
-        count += 1
-
-game_OVER = False
-
-#places numbers in logic grid
-test_cords = ((-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,0),(1,1),(1,-1))
-for y in range(10):
-    for x in range(10):
-        if grid[y][x] == 'B':
-            for d in test_cords:
-                test = (x+d[0], y+d[1])
-                if test[0]<10 and test[0]>=0 and test[1] < 10 and test[1] >= 0:
-                    if grid[test[1]][test[0]] != 'B':
-                        grid[test[1]][test[0]] += 1
-
-#four should be max numbers of bombs usually - build in exception for 5? max!
-
-#makes tile_rects
-x = 18
-y = 150
-for z in range(10):
-    row = []
-    for i in range(10):
-        row.append(pygame.Rect((x+2,y),(28,28)))
-        x += 30
-    x = 18
-    y += 30
-    tile_rects.append(row)
-
-print_grid(grid)
 
 ###############
 ## game loop ##
 ###############
 
 clock = pygame.time.Clock()           
-clicked = False
-hover = False
+clicked = False #to track clicking of menu items
+hover = False  #to track if the mouse is hovering over a menu item
 done = False
 game = False
 pygame.display.set_caption('Minesweeper')
 screen.fill(BLACK)
-quit_rect = pygame.Rect((50,290), (94,40))
-start_rect =  pygame.Rect((50,228), (220,40))
-win_count = 0
+quit_rect = pygame.Rect((50,290), (94,40))  #rects for checking collision w/ 
+start_rect =  pygame.Rect((50,228), (220,40)) #menu items
 won = False
+
 
 while not done:
     screen.fill(BLACK)
@@ -222,6 +172,57 @@ while not done:
         else:
             hover = False
                 
+
+    #make play grids
+    grid = [] #logic grid
+    tile_state = [] #tile state grid
+    tile_rects = [] #tile rectaingle grill
+
+#init grid
+    for i in range(10):   
+        row = []
+        for j in range(10):
+            row.append(0)
+        grid.append(row)
+
+#init tile_state (0 for unseen, 1 for uncovered, 2 for flagged)
+    for i in range(10):
+        row = []
+        for j in range(10):
+            row.append(0)
+        tile_state.append(row)
+
+    count = 0   
+    while count < 10:  #while loop inserts bombs in logic grid
+        x = random.randrange(10)
+        y = random.randrange(10)
+        if grid[x][y] == 0:
+            grid[x][y] = 'B'
+            count += 1
+
+    game_OVER = False
+
+#places numbers in logic grid
+    for y in range(10):
+        for x in range(10):
+            if grid[y][x] == 'B':
+                for d in test_cords:
+                    test = (x+d[0], y+d[1])
+                    if test[0]<10 and test[0]>=0 and test[1] < 10 and test[1] >= 0:
+                        if grid[test[1]][test[0]] != 'B':
+                            grid[test[1]][test[0]] += 1
+
+#makes tile_rects
+    x = 18
+    y = 150
+    for z in range(10):
+        row = []
+        for i in range(10):
+            row.append(pygame.Rect((x+2,y),(28,28)))
+            x += 30
+        x = 18
+        y += 30
+        tile_rects.append(row)
     
        
     #draw 'minesweeper' title thang
@@ -234,9 +235,9 @@ while not done:
    
 
     #draw menu items
-    COLOR1 = (65,65,65)
+    COLOR1 = 130,130,130
     COLOR2 = COLOR1
-    COLOR3 = 181,179,179
+    COLOR3 = 255,255,255
     if hover == start_rect:
         COLOR1 = COLOR3
     elif hover == quit_rect:
@@ -254,11 +255,7 @@ while not done:
         screen.fill(BG_GRAY) #background
 
         exit_rect = pygame.Rect((130,470),(65,25))
-        
-        #exit bit
-        #exit_rect = pygame.Rect   #exit rect
-        #pygame.draw.rect(screen,WHITE,((130,470),(55,25)))
-                        
+           
             
         #input
         for evt in pygame.event.get():
@@ -277,8 +274,6 @@ while not done:
                     for y in range(10):
                         rect = tile_rects[x][y]
                         if rect.collidepoint(pygame.mouse.get_pos()):
-                            if grid[x][y] != 'B' and tile_state[x][y] != 1:
-                                win_count += 1
                             tile_state[x][y] = 1
             elif evt.type == MOUSEBUTTONDOWN and evt.button == 3: #flag
                 for x in range(10):
@@ -302,8 +297,7 @@ while not done:
 
 
         #winning circuit
-        if win_count == 90:  #track winnings!
-            won = True
+        won = winner()
         while (won):
             x = 29
             y = 52
@@ -312,10 +306,10 @@ while not done:
             for evt in pygame.event.get():
                 if evt.type == MOUSEBUTTONDOWN:
                     if exit_rect.collidepoint(pygame.mouse.get_pos()):
-                        game_OVER = False
+                        won = False
                         game = False
                 elif evt.type == KEYDOWN and evt.key == K_ESCAPE:
-                    game_OVER = False
+                    won = False
                     game = False
             EXIT_COLOR = WHITE
             if exit_rect.collidepoint(pygame.mouse.get_pos()):
@@ -336,11 +330,11 @@ while not done:
                     if exit_rect.collidepoint(pygame.mouse.get_pos()):
                         game_OVER = False
                         game = False
-                        done = True
+                        #done = True
                 elif evt.type == KEYDOWN and evt.key == K_ESCAPE:
                     game_OVER = False
                     game = False
-                    done = True
+                    #done = True
             EXIT_COLOR = WHITE
             if exit_rect.collidepoint(pygame.mouse.get_pos()):
                 EXIT_COLOR = BORDER_GRAY
