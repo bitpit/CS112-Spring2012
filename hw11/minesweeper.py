@@ -125,6 +125,7 @@ SCREEN_SIZE = 340,520
 FPS = 30
 #test_cords are used to do the adjacent zeros function and the board setup
 test_cords = ((-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,0),(1,1),(1,-1))
+zeros_cords = ((-1,0),(0,-1),(0,1),(1,0))
 
 ################
 ## initialize ##
@@ -285,7 +286,7 @@ while not done:
         
 
         #draw
-        adjacent_zeros(test_cords)
+        adjacent_zeros(zeros_cords)
         game_OVER = draw_grid()
         
     
