@@ -17,6 +17,16 @@ def render_font(text,x,y,color,size):
     rend = font.render(text, True, color)
     screen.blit(rend, (x,y))
 
+def final_bombs():
+    for z in range(10):
+        for i in range(10):
+            fX, fY, p, pp = tile_rects[z][i]
+            if tile_state[z][i] == 0 and grid[z][i] == 'B':
+                fX, fY, p, pp = tile_rects[z][i]
+                pygame.draw.rect(screen,(193,193,193),tile_rects[z][i])
+                d_bomb(fX+13,fY+15)
+    return
+                                 
 
 def print_grid(grid):
     for i, row in enumerate(grid):
@@ -83,9 +93,17 @@ def draw_grid():
             y += 30
             pygame.draw.line(screen,WHITE,(x,y-2),(x+300,y-2),2)
         return over
-            
 
-
+def adjacent_zeros(test_cords):
+    for x in range(10):
+        for y in range(10):
+            if grid[x][y] == 0 and tile_state[x][y] == 1:
+                for d in test_cords:
+                    test = (x+d[0], y+d[1])
+                    if test[0]<10 and test[0]>=0 and test[1] < 10 and test[1] >= 0:
+                        if grid[test[0]][test[1]] == 0:
+                            tile_state[test[0]][test[1]] = 1
+    
 
 ##############
 ## Settings ##
@@ -95,6 +113,7 @@ WHITE = 255,255,255
 
 TILE_GRAY = 192,192,192 #is also outer border gray
 BORDER_GRAY = 128,128,128#is also tile border bottom/right gray
+BG_GRAY = 90,90,90
 
 TEAL = 0,255,150
 
@@ -232,7 +251,7 @@ while not done:
     ###############
     while game == True:
         uncover = False
-        screen.fill(TILE_GRAY) #background
+        screen.fill(BG_GRAY) #background
 
         exit_rect = pygame.Rect((130,470),(65,25))
         
@@ -271,7 +290,10 @@ while not done:
         
 
         #draw
+        adjacent_zeros(test_cords)
         game_OVER = draw_grid()
+        
+    
         
         EXIT_COLOR = WHITE
         if exit_rect.collidepoint(pygame.mouse.get_pos()):
@@ -314,14 +336,16 @@ while not done:
                     if exit_rect.collidepoint(pygame.mouse.get_pos()):
                         game_OVER = False
                         game = False
+                        done = True
                 elif evt.type == KEYDOWN and evt.key == K_ESCAPE:
                     game_OVER = False
                     game = False
+                    done = True
             EXIT_COLOR = WHITE
             if exit_rect.collidepoint(pygame.mouse.get_pos()):
                 EXIT_COLOR = BORDER_GRAY
             render_font("EXIT",146,474,EXIT_COLOR,27)       
-            
+            final_bombs()
             pygame.display.flip()
             clock.tick(FPS)
             
