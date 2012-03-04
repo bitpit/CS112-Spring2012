@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+'''
+need to add:
+   comments
+   cascadeing zeros
+'''
+
 import pygame
 from pygame.locals import *
 import math
@@ -55,9 +61,6 @@ def draw_grid():
                     if text == 'B':
                         d_bomb(fX+13,fY+15)
                         over = True
-                    elif text == '0':
-                        TEXT_COLOR = 0,0,0
-                        render_font(text,fX+7,fY+4,TEXT_COLOR,31)
                     elif text == '1':
                         TEXT_COLOR = 0,0,255
                         render_font(text,fX+7,fY+4,TEXT_COLOR,31)
@@ -159,6 +162,8 @@ for z in range(10):
     y += 30
     tile_rects.append(row)
 
+print_grid(grid)
+
 ###############
 ## game loop ##
 ###############
@@ -172,6 +177,8 @@ pygame.display.set_caption('Minesweeper')
 screen.fill(BLACK)
 quit_rect = pygame.Rect((50,290), (94,40))
 start_rect =  pygame.Rect((50,228), (220,40))
+win_count = 0
+won = False
 
 while not done:
     screen.fill(BLACK)
@@ -251,6 +258,8 @@ while not done:
                     for y in range(10):
                         rect = tile_rects[x][y]
                         if rect.collidepoint(pygame.mouse.get_pos()):
+                            if grid[x][y] != 'B' and tile_state[x][y] != 1:
+                                win_count += 1
                             tile_state[x][y] = 1
             elif evt.type == MOUSEBUTTONDOWN and evt.button == 3: #flag
                 for x in range(10):
@@ -258,24 +267,43 @@ while not done:
                         rect = tile_rects[x][y]
                         if rect.collidepoint(pygame.mouse.get_pos()):
                             tile_state[x][y] = 2
-                
-            
-                
-               
-                    
         
-        #refresh
-
+        
 
         #draw
-        
         game_OVER = draw_grid()
         
         EXIT_COLOR = WHITE
         if exit_rect.collidepoint(pygame.mouse.get_pos()):
             EXIT_COLOR = BORDER_GRAY
         render_font("EXIT",146,474,EXIT_COLOR,27)
+
+
+        #winning circuit
+        if win_count == 90:  #track winnings!
+            won = True
+        while (won):
+            x = 29
+            y = 52
+            pygame.draw.rect(screen,BLACK,((x,y),(280,60)))
+            render_font("YOU WON!!",x+22,y+13,WHITE,60)
+            for evt in pygame.event.get():
+                if evt.type == MOUSEBUTTONDOWN:
+                    if exit_rect.collidepoint(pygame.mouse.get_pos()):
+                        game_OVER = False
+                        game = False
+                elif evt.type == KEYDOWN and evt.key == K_ESCAPE:
+                    game_OVER = False
+                    game = False
+            EXIT_COLOR = WHITE
+            if exit_rect.collidepoint(pygame.mouse.get_pos()):
+                EXIT_COLOR = BORDER_GRAY
+            render_font("EXIT",146,474,EXIT_COLOR,27)       
+            
+            pygame.display.flip()
+            clock.tick(FPS)
         
+        #losing circuit
         while (game_OVER):
             x = 29
             y = 52
