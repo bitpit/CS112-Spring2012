@@ -4,14 +4,14 @@
 def greeter(name):
     name = str(name)
     print_name = name.lower()
-    return "hello, %s" %print_name
+    print "hello, "+print_name
 
 
 # Draw a box
 def box(w,h):
     wholder = w
     h2 = h
-    if w < 1 or h < 1:
+    if not isinstance(h,int) or not isinstance(w,int) or w < 1 or h < 1:
         print "Error: Invalid Dimensions"
     else:
         while h > 0:
