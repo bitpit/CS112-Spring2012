@@ -25,6 +25,6 @@ def point_in_box(pt, box):
 
 
 pt=[12,12]
-box=[10,10,10,10]
+rect=[10,10,10,10]
 
-print point_in_box(pt, box)
+print point_in_box(pt, rect)

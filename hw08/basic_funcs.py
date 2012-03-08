@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 
 # Make a greeter
 def greeter(name):
@@ -16,30 +17,31 @@ def box(w,h):
     else:
         while h > 0:
             if h == 1 or h == h2:
-                print "+",
+                sys.stdout.write('+')
                 w -= 1
                 h -= 1
                 while w > 1:
-                    print "-",
+                    sys.stdout.write('-')
                     w -= 1
                 if h > 1 or w > 0:
-                    print "+",
+                    sys.stdout.write('+')
                     print
                 elif h == 1:
                     print
-                    print "+",
+                    sys.stdout.write('+')
                     return
                 w = wholder
                 while h > 1:    
-                    print "|",
+                    sys.stdout.write('|')
                     w -= 1
                     while w > 1:
-                        print " ",
+                        sys.stdout.write(' ')
                         w -= 1
-                    print "|",
+                    sys.stdout.write('|')
                     h -= 1
                     print
                     w = wholder
+
 
 
 # ADVANCED

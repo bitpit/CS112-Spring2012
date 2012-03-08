@@ -36,10 +36,12 @@ class Ship(Sprite):
         if self.rect.left < self.bounds.left or self.rect.right > self.bounds.right:
             self.vx = -self.vx
             self.rect.x += -2 * dx
+            
 
         if self.rect.top < self.bounds.top or self.rect.bottom > self.bounds.bottom:
             self.vy = -self.vy
             self.rect.y += -2 * dy
+            
 
 
 
