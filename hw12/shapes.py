@@ -41,8 +41,8 @@ class Circle(Shape):
     def area(self):
         orea = math.pi*(self.r*self.r)
         return orea
-    def perimeter(self): #for future reference, the 'perimeter' of a circle
-        perm = math.pi*(self.r*2)  #is called the 'circumference'
+    def perimeter(self): # should be circumference
+        perm = math.pi*(self.r*2) 
         return perm
     def __str__(self):
         ps = str(self.r)
