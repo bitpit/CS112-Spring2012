@@ -10,7 +10,7 @@ class Shape(object):
         pass
             
 
-class Rectangle(Shape):
+class Rect(Shape):
     def __init__(self, w, h):
         Shape.__init__(self)
         self.width = w
@@ -27,9 +27,9 @@ class Rectangle(Shape):
         return "A rectangle with a height of "+pw+" and a width of "+ph+"."
 
 
-class Square(Rectangle):
+class Square(Rect):
     def __init__(self, w):
-        Rectangle.__init__(self, w, h=w)
+        Rect.__init__(self, w, h=w)
     def __str__(self):
         ps = str(self.width)
         return "A square with 4 sides measuring "+ps+" units in length."
@@ -41,8 +41,8 @@ class Circle(Shape):
     def area(self):
         orea = math.pi*(self.r*self.r)
         return orea
-    def circumference(self):
-        perm = math.pi*(self.r*2)
+    def perimeter(self): #for future reference, the 'perimeter' of a circle
+        perm = math.pi*(self.r*2)  #is called the 'circumference'
         return perm
     def __str__(self):
         ps = str(self.r)
