@@ -2,7 +2,7 @@
 
 
 
-
+import random
 import pygame
 from pygame.locals import *
 from pygame.sprite import Sprite, Group, RenderUpdates
@@ -17,6 +17,11 @@ def load_graphics(filename):
         raise SystemExit, message
     return image, image.get_rect()
 
+
+def text_render(text,x,y,color,size):
+    font = pygame.font.Font(None, size)
+    rend = font.render(text, True, color)
+    screen.blit(rend, (x,y))
 
 
 class PlayerShip(Sprite):
@@ -42,7 +47,7 @@ class PlayerShip(Sprite):
 
 
 class Wasp(Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, status):
         Sprite.__init__(self)
         self.image, self.rect = load_graphics('wasp_baddie.png')
         self.rect.x = x
@@ -50,37 +55,92 @@ class Wasp(Sprite):
         self.add(wasp_baddies)
         self.direction = 1
         self.newy = y+90
-        self.health = 4
+        self.health = 7
+        self.status = status
 
     def update(self):
-        if 50 < self.rect.x + 10*self.direction < 540:
+        if self.status == 0:
+            self.rect.x += 10
+            if self.rect.x >= 60:
+                self.status = 1
+        elif 50 < self.rect.x + 10*self.direction < 540:
             self.rect.x += 10*self.direction
         elif self.rect.y < self.newy:
             self.rect.y += 25
         else:
+            if self.rect.y < 190:
+                newwasp = Wasp(-15,50,0)
             self.direction *= -1
             self.newy += 90
 
     def hurt(self, amount):
         if self.health - amount <= 0:
+            EnemyExplosion((self.rect.x-4,self.rect.y+25))
             self.kill()
         else:
             self.health -= amount
-       
 
+
+class EnemyExplosion(Sprite):
+    def __init__(self, position):
+        Sprite.__init__(self)
+        self.position = position
+        self.duration = 10
+        self.expandto = 18
+        self.radius = 5
+        self.add(explosions)
+        
+    def update(self):
+        if self.expandto > self.radius:
+            self.radius += 3
+        else:
+            self.kill()
+
+    def random_color(self):
+        return ((random.randrange(120,256), 255, random.randrange(120,256)))
+
+    def draw(self, surf):
+        pygame.draw.circle(surf, self.random_color(), self.position, self.radius)
+
+
+'''
+class WaspSpawner(Sprite):
+    def __init__(self, x=-15, y=50):
+        Sprite.__init__(self)
+        self.image, self.rect = load_graphics('wasp_baddie.png')
+        self.rect.x = x
+        self.rect.y = y
+        self.newy = y+90
+        self.direction = 1
+        self.health = 4
+        self.add(new_wasps)
+
+    def update(self):
+        if self.rect.x < 65:
+            self.rect.x += 10
+        else:
+            self.add(wasp_baddies)
+            self.remove(new_wasps)
+            #self.add(wasp_baddies)
+       
+'''
 
 class BulletShoot(Sprite):
-    def __init__(self, ship):
+    def __init__(self, ship, group):
         Sprite.__init__(self)
         self.image, self.rect = load_graphics('bullet.png')
         self.rect.x = ship.rect.x+30
         self.rect.y = ship.rect.y
-        self.add(bullets)
+        self.add(group)
     def fire(self):
         if self.rect.y - 16 <= 0:
             self.kill()
         self.rect.y -= 18
-
+'''
+class EnemyBullet(BulletShoot):
+    def __init__(self, ship):
+        BulletShoot.__init__(self, ship)
+'''
 
 
 ##########
@@ -99,8 +159,9 @@ FPS = 30
 pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
-game = True
+game = False
 won = False
+begin = True
 screen.fill(BLACK)
 pygame.display.set_caption('Gaylaxitives')
 
@@ -118,12 +179,16 @@ ship = PlayerShip()
 
 wasp_baddies = Group()
 
-bullets = Group()
+your_bullets = Group()
+enemy_bullets = Group()
 
+explosions = Group()
+
+#creates enemies currently
 bx = 490
 by = 50
 for i in range(5):
-    p = Wasp(bx,by)
+    p = Wasp(bx,by,1)
     bx -= 66
 
 
@@ -134,6 +199,25 @@ move = 0
 ######
 #game#
 ######
+pygame.draw.rect(screen,BLACK,screen_rect)
+text_render("Use arrows to move, space to fire.",145,225,WHITE,30)
+text_render("Press space to begin.",110,285,WHITE,50)
+
+while begin:
+    for evt in pygame.event.get():
+        if evt.type == QUIT:
+            begin = False
+        elif evt.type == KEYDOWN: 
+            if evt.key == K_ESCAPE:
+                begin = False
+            if evt.key == K_SPACE:
+                game = True
+                begin = False
+
+
+    pygame.display.flip()
+    clock.tick(FPS)
+
 
 while game:
     pygame.draw.rect(screen,BLACK,screen_rect)
@@ -146,9 +230,9 @@ while game:
             if evt.key == K_ESCAPE:
                 game = False
             if evt.key == K_SPACE:
-                missle = BulletShoot(ship)
+                missle = BulletShoot(ship,your_bullets)
             if evt.key == K_p:
-                print len(bullets)
+                print len(explosions)
             
 
     #input for game
@@ -170,17 +254,24 @@ while game:
         wasp_baddies.update()
         move = 0
     
-
-    for i in bullets:
+    #update bullets
+    for i in your_bullets:
         i.fire()
-        bullets.draw(screen)
+        your_bullets.draw(screen)
 
-    for enemy in pygame.sprite.groupcollide(wasp_baddies, bullets, False, True):
+    for enemy in pygame.sprite.groupcollide(wasp_baddies, your_bullets, False, True):
         enemy.hurt(1)
             
 
 
-    #draw   
+    #update explosions
+        
+    for i in explosions:
+        i.update()
+        i.draw(screen)
+
+
+    #draw 
     pship_group.draw(screen)
     wasp_baddies.draw(screen)
 
