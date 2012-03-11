@@ -30,8 +30,8 @@ class PlayerShip(Sprite):
         self.image, self.rect = load_graphics('player_ship.png')
         self.rect.x = x
         self.rect.y = y
-        #self.rect.clamp(surf)
         self.add(pship_group)
+        self.health = 50
 
     def update(self, dx, dy):
         if dx > 0 and self.rect.x+dx < 600-self.rect.w:
@@ -81,6 +81,43 @@ class Wasp(Sprite):
             self.health -= amount
 
 
+class Aliens(Sprite):
+    def __init__(self, x, y, status, group):
+        Sprite.__init__(self)
+        self.image, self.rect = load_graphics('ws_baddie.png')
+        self.rect.x = x
+        self.rect.y = y
+        self.health = 10
+        self.status = status
+        self.add(group)
+        self.xdirection = 1
+        self.ydirection = 1
+
+    def update(self):
+        dx = random.randrange(-30,30)
+        dy = random.randrange(-30,30)
+        if self.status == 0 and self.rect.y < 25:
+            self.rect.y += 10
+        elif self.status == 0:
+            self.status = 1
+        if self.rect.x + dx*self.xdirection > 540 or self.rect.x + dx*self.xdirection < 20:
+            self.xdirection *= -1
+        if self.rect.y + dy*self.ydirection > 480 or self.rect.y + dy*self.ydirection < 15:
+            self.ydirection *= -1
+        self.rect.x += dx*self.xdirection
+        self.rect.y += dy*self.ydirection
+        fire = random.randrange(5)
+        if fire == 4:
+            BulletShoot(self, enemy_bullets)
+
+    def hurt(self, amount):
+        if self.health - amount <= 0:
+            EnemyExplosion((self.rect.x-4,self.rect.y+25))
+            self.kill()
+        else:
+            self.health -= amount
+
+
 class EnemyExplosion(Sprite):
     def __init__(self, position):
         Sprite.__init__(self)
@@ -103,27 +140,6 @@ class EnemyExplosion(Sprite):
         pygame.draw.circle(surf, self.random_color(), self.position, self.radius)
 
 
-'''
-class WaspSpawner(Sprite):
-    def __init__(self, x=-15, y=50):
-        Sprite.__init__(self)
-        self.image, self.rect = load_graphics('wasp_baddie.png')
-        self.rect.x = x
-        self.rect.y = y
-        self.newy = y+90
-        self.direction = 1
-        self.health = 4
-        self.add(new_wasps)
-
-    def update(self):
-        if self.rect.x < 65:
-            self.rect.x += 10
-        else:
-            self.add(wasp_baddies)
-            self.remove(new_wasps)
-            #self.add(wasp_baddies)
-       
-'''
 
 class BulletShoot(Sprite):
     def __init__(self, ship, group):
@@ -132,10 +148,10 @@ class BulletShoot(Sprite):
         self.rect.x = ship.rect.x+30
         self.rect.y = ship.rect.y
         self.add(group)
-    def fire(self):
-        if self.rect.y - 16 <= 0:
+    def fire(self, direction):
+        if self.rect.y - 16*direction <= 0 or self.rect.y - 16*direction >= 599:
             self.kill()
-        self.rect.y -= 18
+        self.rect.y -= 18*direction
 '''
 class EnemyBullet(BulletShoot):
     def __init__(self, ship):
@@ -162,6 +178,7 @@ clock = pygame.time.Clock()
 game = False
 won = False
 begin = True
+phase2 = False
 screen.fill(BLACK)
 pygame.display.set_caption('Gaylaxitives')
 
@@ -256,12 +273,16 @@ while game:
     
     #update bullets
     for i in your_bullets:
-        i.fire()
-        your_bullets.draw(screen)
+        i.fire(1)
+    your_bullets.draw(screen)
 
     for enemy in pygame.sprite.groupcollide(wasp_baddies, your_bullets, False, True):
         enemy.hurt(1)
             
+    for i in enemy_bullets:
+        i.fire(-1)
+    enemy_bullets.draw(screen)
+
 
 
     #update explosions
@@ -269,6 +290,18 @@ while game:
     for i in explosions:
         i.update()
         i.draw(screen)
+
+        
+    if len(wasp_baddies) == 0:
+        x = 0
+        y = -30
+        for i in range(6):
+            Aliens(x, y, 0, wasp_baddies)
+            x += 90
+            
+
+    if len(pship_group) == 0:
+        game = False
 
 
     #draw 
@@ -283,3 +316,22 @@ while game:
     clock.tick(FPS)
 
 
+
+if not won:
+    pygame.draw.rect(screen,WHITE,((65,170),(660,230)))
+    text_render('Game Over',110,240,BLACK,150)
+
+while not won:
+    
+    for evt in pygame.event.get():
+        if evt.type == QUIT:
+            exit()
+        elif evt.type == KEYDOWN: 
+            if evt.key == K_ESCAPE:
+                exit()
+            if evt.key == K_SPACE:
+                exit()
+
+
+    pygame.display.flip()
+    clock.tick(FPS)
