@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-
-
 import random
 import pygame
 from pygame.locals import *
 from pygame.sprite import Sprite, Group, RenderUpdates
 import os, sys
+
+
 
 def load_graphics(filename):
     fullfname = os.path.join('graphics', filename)
@@ -44,19 +44,25 @@ class PlayerShip(Sprite):
             self.rect.y += dy 
         pygame.sprite.groupcollide(pship_group, wasp_baddies, True, False)
 
+    def hurt(self,loss):
+        if self.health - loss <= 0:
+            self.kill()
+        else:
+            self.health -= loss
+
 
 
 class Wasp(Sprite):
-    def __init__(self, x, y, status):
+    def __init__(self, x, y, status, group):
         Sprite.__init__(self)
         self.image, self.rect = load_graphics('wasp_baddie.png')
         self.rect.x = x
         self.rect.y = y
-        self.add(wasp_baddies)
         self.direction = 1
         self.newy = y+90
         self.health = 7
         self.status = status
+        self.add(group)
 
     def update(self):
         if self.status == 0:
@@ -69,7 +75,7 @@ class Wasp(Sprite):
             self.rect.y += 25
         else:
             if self.rect.y < 190:
-                newwasp = Wasp(-15,50,0)
+                newwasp = Wasp(-15,50,0,wasp_baddies)
             self.direction *= -1
             self.newy += 90
 
@@ -195,19 +201,26 @@ pship_group = Group()
 ship = PlayerShip()
 
 wasp_baddies = Group()
+sidebar_stuff = Group()
 
 your_bullets = Group()
 enemy_bullets = Group()
 
 explosions = Group()
 
-#creates enemies currently
+#creates start enemies
 bx = 490
 by = 50
 for i in range(5):
-    p = Wasp(bx,by,1)
+    p = Wasp(bx,by,1,wasp_baddies)
     bx -= 66
 
+#create sidebar stuff
+Wasp(635,160,1,sidebar_stuff)
+text_render(" = 300pts", 690,182,(90,90,90),27)
+Aliens(638,280,1,sidebar_stuff)
+text_render(" = 600pts", 693,302,(90,90,90),27)
+sidebar_stuff.draw(screen)
 
 pygame.key.set_repeat(45, 1)
 
@@ -223,10 +236,10 @@ text_render("Press space to begin.",110,285,WHITE,50)
 while begin:
     for evt in pygame.event.get():
         if evt.type == QUIT:
-            begin = False
+            exit()
         elif evt.type == KEYDOWN: 
             if evt.key == K_ESCAPE:
-                begin = False
+                exit()
             if evt.key == K_SPACE:
                 game = True
                 begin = False
@@ -242,14 +255,14 @@ while game:
     #input for exit
     for evt in pygame.event.get():
         if evt.type == QUIT:
-            game = False
+            exit()
         elif evt.type == KEYDOWN: 
             if evt.key == K_ESCAPE:
-                game = False
+                exit()
             if evt.key == K_SPACE:
                 missle = BulletShoot(ship,your_bullets)
             if evt.key == K_p:
-                print len(explosions)
+                print ship.health
             
 
     #input for game
@@ -282,7 +295,10 @@ while game:
     for i in enemy_bullets:
         i.fire(-1)
     enemy_bullets.draw(screen)
+    
 
+    for player in pygame.sprite.groupcollide(pship_group,enemy_bullets, False, True):
+        player.hurt(1)
 
 
     #update explosions
