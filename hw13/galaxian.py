@@ -316,12 +316,16 @@ while game:
     clock.tick(FPS)
 
 
+#//END OF GAME LOOP
+
+pygame.draw.rect(screen,WHITE,((70,170),(660,230)))
 
 if not won:
-    pygame.draw.rect(screen,WHITE,((65,170),(660,230)))
     text_render('Game Over',110,240,BLACK,150)
+else:
+    text_render('You Win!',170,240,BLACK,150)
 
-while not won:
+while not game:
     
     for evt in pygame.event.get():
         if evt.type == QUIT:
