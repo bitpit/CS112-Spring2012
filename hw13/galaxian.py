@@ -24,6 +24,24 @@ def text_render(text,x,y,color,size):
     screen.blit(rend, (x,y))
 
 
+class HealthKeeper(Sprite):
+    def __init__(self, surf):
+        Sprite.__init__(self)
+        self.surface = surf
+        self.length = 150
+
+    def update(self, loss=3):
+        if self.length - loss >= 0:
+            self.length -= loss
+        else:
+            self.length = 0
+
+    def draw(self):
+        pygame.draw.rect(self.surface, BLACK, ((620, 570),(160,11)))
+        if self.length > 0:
+            pygame.draw.line(self.surface,(255,0,0),(625,575),(625+self.length,575),3)
+
+
 class PlayerShip(Sprite):
     def __init__(self, x=260, y=500):
         Sprite.__init__(self)
@@ -48,6 +66,8 @@ class PlayerShip(Sprite):
         if self.health - loss <= 0:
             self.kill()
         else:
+            score.update()
+            score.draw()
             self.health -= loss
 
 
@@ -208,6 +228,8 @@ enemy_bullets = Group()
 
 explosions = Group()
 
+score = HealthKeeper(screen)
+
 #creates start enemies
 bx = 490
 by = 50
@@ -221,6 +243,8 @@ text_render(" = 300pts", 690,182,(90,90,90),27)
 Aliens(638,280,1,sidebar_stuff)
 text_render(" = 600pts", 693,302,(90,90,90),27)
 sidebar_stuff.draw(screen)
+text_render("Ship Health",649,545,(80,80,80),24)
+score.draw()
 
 pygame.key.set_repeat(45, 1)
 
@@ -317,6 +341,8 @@ while game:
             
 
     if len(pship_group) == 0:
+        score.update(150)
+        score.draw()
         game = False
 
 
@@ -349,8 +375,7 @@ while not game:
         elif evt.type == KEYDOWN: 
             if evt.key == K_ESCAPE:
                 exit()
-            if evt.key == K_SPACE:
-                exit()
+    
 
 
     pygame.display.flip()
