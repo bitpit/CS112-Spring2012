@@ -37,6 +37,7 @@ class PlayerShip(Sprite):
             self.rect.y += dy 
         if dy < 0 and self.rect.y+dy>0:
             self.rect.y += dy 
+        pygame.sprite.groupcollide(pship_group, wasp_baddies, True, False)
 
 
 
@@ -47,7 +48,38 @@ class Wasp(Sprite):
         self.rect.x = x
         self.rect.y = y
         self.add(wasp_baddies)
+        self.direction = 1
+        self.newy = y+90
+        self.health = 4
+
+    def update(self):
+        if 50 < self.rect.x + 10*self.direction < 540:
+            self.rect.x += 10*self.direction
+        elif self.rect.y < self.newy:
+            self.rect.y += 25
+        else:
+            self.direction *= -1
+            self.newy += 90
+
+    def hurt(self, amount):
+        if self.health - amount <= 0:
+            self.kill()
+        else:
+            self.health -= amount
        
+
+
+class BulletShoot(Sprite):
+    def __init__(self, ship):
+        Sprite.__init__(self)
+        self.image, self.rect = load_graphics('bullet.png')
+        self.rect.x = ship.rect.x+30
+        self.rect.y = ship.rect.y
+        self.add(bullets)
+    def fire(self):
+        if self.rect.y - 16 <= 0:
+            self.kill()
+        self.rect.y -= 18
 
 
 
@@ -86,14 +118,18 @@ ship = PlayerShip()
 
 wasp_baddies = Group()
 
-bx = 50
+bullets = Group()
+
+bx = 490
 by = 50
-for i in range(9):
+for i in range(5):
     p = Wasp(bx,by)
-    bx += 60
+    bx -= 66
 
 
-pygame.key.set_repeat(1, 1)
+pygame.key.set_repeat(45, 1)
+
+move = 0
 
 ######
 #game#
@@ -109,6 +145,10 @@ while game:
         elif evt.type == KEYDOWN: 
             if evt.key == K_ESCAPE:
                 game = False
+            if evt.key == K_SPACE:
+                missle = BulletShoot(ship)
+            if evt.key == K_p:
+                print len(bullets)
             
 
     #input for game
@@ -121,13 +161,22 @@ while game:
         ship.update(0,-6)
     if pressed[K_DOWN]:
         ship.update(0,6)
-    
  
-       
-    
+
+    #update wasp baddies
+    if move < 2:
+        move += 1
+    else:
+        wasp_baddies.update()
+        move = 0
     
 
+    for i in bullets:
+        i.fire()
+        bullets.draw(screen)
 
+    for enemy in pygame.sprite.groupcollide(wasp_baddies, bullets, False, True):
+        enemy.hurt(1)
             
 
 
