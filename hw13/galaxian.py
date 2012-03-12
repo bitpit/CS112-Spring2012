@@ -30,7 +30,8 @@ class HealthKeeper(Sprite):
         self.surface = surf
         self.length = 150
 
-    def update(self, loss=3):
+    def update(self, loss=1):
+        loss *= 3
         if self.length - loss >= 0:
             self.length -= loss
         else:
@@ -40,6 +41,35 @@ class HealthKeeper(Sprite):
         pygame.draw.rect(self.surface, BLACK, ((620, 570),(160,11)))
         if self.length > 0:
             pygame.draw.line(self.surface,(255,0,0),(625,575),(625+self.length,575),3)
+
+
+class ScoreKeeper(Sprite):
+    def __init__(self, surf):
+        Sprite.__init__(self)
+        self.surface = surf
+        self.score = int(0000000000)
+        
+    def increase(self, amount):
+        self.score += amount
+
+    def draw(self):
+        pygame.draw.rect(screen, BLACK, ((610,55),(180,50)))
+        pygame.draw.rect(screen, (180,180,180), ((612,57),(176,46)))
+        if self.score == 0:
+            text_render('0000000000',614,68,BLACK,40)
+        elif self.score < 1000:
+            text_render('0000000',614,68,BLACK,40)
+            text_render(str(self.score),733,68,BLACK,40)
+        elif self.score < 10000:
+            text_render('000000',614,68,BLACK,40)
+            text_render(str(self.score),718,68,BLACK,40)
+        elif self.score < 100000:
+            text_render('00000',614,68,BLACK,40)
+            text_render(str(self.score),703,68,BLACK,40)
+        elif self.score < 1000000:
+            text_render('0000',614,68,BLACK,40)
+            text_render(str(self.score),688,68,BLACK,40)
+
 
 
 class PlayerShip(Sprite):
@@ -60,16 +90,15 @@ class PlayerShip(Sprite):
             self.rect.y += dy 
         if dy < 0 and self.rect.y+dy>0:
             self.rect.y += dy 
-        pygame.sprite.groupcollide(pship_group, wasp_baddies, True, False)
+
 
     def hurt(self,loss):
         if self.health - loss <= 0:
             self.kill()
         else:
-            score.update()
-            score.draw()
             self.health -= loss
-
+            health.update(loss)
+            health.draw()
 
 
 class Wasp(Sprite):
@@ -80,17 +109,23 @@ class Wasp(Sprite):
         self.rect.y = y
         self.direction = 1
         self.newy = y+90
-        self.health = 7
+        self.health = 4
         self.status = status
         self.add(group)
 
     def update(self):
+        if self.rect.y > 318:
+            speed = 13
+        elif self.rect.y > 402:
+            speed = 16
+        else:
+            speed = 10
         if self.status == 0:
             self.rect.x += 10
             if self.rect.x >= 60:
                 self.status = 1
-        elif 50 < self.rect.x + 10*self.direction < 540:
-            self.rect.x += 10*self.direction
+        elif 50 < self.rect.x + speed*self.direction < 540:
+            self.rect.x += speed*self.direction
         elif self.rect.y < self.newy:
             self.rect.y += 25
         else:
@@ -101,6 +136,8 @@ class Wasp(Sprite):
 
     def hurt(self, amount):
         if self.health - amount <= 0:
+            score.increase(300)
+            score.draw()
             EnemyExplosion((self.rect.x-4,self.rect.y+25))
             self.kill()
         else:
@@ -132,12 +169,14 @@ class Aliens(Sprite):
             self.ydirection *= -1
         self.rect.x += dx*self.xdirection
         self.rect.y += dy*self.ydirection
-        fire = random.randrange(5)
+        fire = random.randrange(7)
         if fire == 4:
             BulletShoot(self, enemy_bullets)
 
     def hurt(self, amount):
         if self.health - amount <= 0:
+            score.increase(600)
+            score.draw()
             EnemyExplosion((self.rect.x-4,self.rect.y+25))
             self.kill()
         else:
@@ -178,11 +217,7 @@ class BulletShoot(Sprite):
         if self.rect.y - 16*direction <= 0 or self.rect.y - 16*direction >= 599:
             self.kill()
         self.rect.y -= 18*direction
-'''
-class EnemyBullet(BulletShoot):
-    def __init__(self, ship):
-        BulletShoot.__init__(self, ship)
-'''
+
 
 
 ##########
@@ -205,17 +240,16 @@ game = False
 won = False
 begin = True
 phase2 = False
+pause = False
 screen.fill(BLACK)
-pygame.display.set_caption('Gaylaxitives')
+pygame.display.set_caption('rockets:moneyhole')
+unlimit = -1
+limitless = False
 
 screen_rect = pygame.Rect((0,0),(600,600))
 info_rect = pygame.Rect((600,0),(200,600))
 
 bounds = screen_rect
-
-pygame.draw.rect(screen, (210,210,210), info_rect)
-pygame.draw.line(screen, WHITE, (600,0),(600,600), 3)
-
 
 pship_group = Group()
 ship = PlayerShip()
@@ -228,7 +262,9 @@ enemy_bullets = Group()
 
 explosions = Group()
 
-score = HealthKeeper(screen)
+health = HealthKeeper(screen)
+score = ScoreKeeper(screen)
+
 
 #creates start enemies
 bx = 490
@@ -237,15 +273,8 @@ for i in range(5):
     p = Wasp(bx,by,1,wasp_baddies)
     bx -= 66
 
-#create sidebar stuff
-Wasp(635,160,1,sidebar_stuff)
-text_render(" = 300pts", 690,182,(90,90,90),27)
-Aliens(638,280,1,sidebar_stuff)
-text_render(" = 600pts", 693,302,(90,90,90),27)
-sidebar_stuff.draw(screen)
-text_render("Ship Health",649,545,(80,80,80),24)
-score.draw()
 
+#set key repeats for movement
 pygame.key.set_repeat(45, 1)
 
 move = 0
@@ -254,8 +283,11 @@ move = 0
 #game#
 ######
 pygame.draw.rect(screen,BLACK,screen_rect)
-text_render("Use arrows to move, space to fire.",145,225,WHITE,30)
-text_render("Press space to begin.",110,285,WHITE,50)
+
+#intro text
+text_render("Use arrows to move, space to fire,",230,225,WHITE,30)
+text_render("and esc to pause during gameplay.",259,248,WHITE,24)
+text_render("Press space to begin.",180,285,WHITE,60)
 
 while begin:
     for evt in pygame.event.get():
@@ -273,6 +305,21 @@ while begin:
     clock.tick(FPS)
 
 
+#create sidebar stuff
+pygame.draw.rect(screen, (210,210,210), info_rect)
+pygame.draw.line(screen, WHITE, (600,0),(600,600), 3)
+
+Wasp(635,160,1,sidebar_stuff)
+text_render(" = 300 pts", 690,182,(90,90,90),27)
+Aliens(638,280,1,sidebar_stuff)
+text_render(" = 600 pts", 693,302,(90,90,90),27)
+sidebar_stuff.draw(screen)
+text_render("Ship Power",649,545,(80,80,80),24)
+health.draw()
+score.draw()
+text_render("Score",720,25,BLACK,34)
+
+
 while game:
     pygame.draw.rect(screen,BLACK,screen_rect)
     
@@ -282,23 +329,39 @@ while game:
             exit()
         elif evt.type == KEYDOWN: 
             if evt.key == K_ESCAPE:
-                exit()
+                pygame.key.set_repeat()
+                pause = True
             if evt.key == K_SPACE:
-                missle = BulletShoot(ship,your_bullets)
+                if unlimit == -1:
+                    pygame.key.set_repeat(30,10)
+                    missle = BulletShoot(ship,your_bullets)
+                    pygame.key.set_repeat(45, 1)
+                else:
+                    missle = BulletShoot(ship,your_bullets)
             if evt.key == K_p:
-                print ship.health
-            
+                print score.score
+
+
+    #loop for paused game
+    while pause:
+        for evt in pygame.event.get():
+            if evt.type == KEYDOWN and evt.key == K_ESCAPE:
+                pygame.key.set_repeat(45, 1)
+                pause = False
+            if evt.type == QUIT:
+                exit()
+        clock.tick(FPS)
 
     #input for game
     pressed = pygame.key.get_pressed()
     if pressed[K_LEFT]:
-        ship.update(-6,0)
+        ship.update(-8,0)
     if pressed[K_RIGHT]:
-        ship.update(6,0)
+        ship.update(8,0)
     if pressed[K_UP]:
-        ship.update(0,-6)
+        ship.update(0,-8)
     if pressed[K_DOWN]:
-        ship.update(0,6)
+        ship.update(0,8)
  
 
     #update wasp baddies
@@ -323,10 +386,11 @@ while game:
 
     for player in pygame.sprite.groupcollide(pship_group,enemy_bullets, False, True):
         player.hurt(1)
+    for player in pygame.sprite.groupcollide(pship_group,wasp_baddies, False, False):
+        player.hurt(17)
 
-
+    
     #update explosions
-        
     for i in explosions:
         i.update()
         i.draw(screen)
@@ -335,14 +399,15 @@ while game:
     if len(wasp_baddies) == 0:
         x = 0
         y = -30
+        unlimit = 1
         for i in range(6):
             Aliens(x, y, 0, wasp_baddies)
             x += 90
             
 
     if len(pship_group) == 0:
-        score.update(150)
-        score.draw()
+        health.update(150)
+        health.draw()
         game = False
 
 
@@ -350,7 +415,12 @@ while game:
     pship_group.draw(screen)
     wasp_baddies.draw(screen)
 
-
+    if 0 < unlimit < 100 and limitless == False:
+        text_render("Unlimited Ammo: Just Hold Space!",15,570,WHITE,19)
+        unlimit += 1
+    else:
+        limitless = True
+        
 
 
     #update
