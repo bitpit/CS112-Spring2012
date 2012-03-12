@@ -43,6 +43,7 @@ class HealthKeeper(Sprite):
             pygame.draw.line(self.surface,(255,0,0),(625,575),(625+self.length,575),3)
 
 
+
 class ScoreKeeper(Sprite):
     def __init__(self, surf):
         Sprite.__init__(self)
@@ -69,6 +70,7 @@ class ScoreKeeper(Sprite):
         elif self.score < 1000000:
             text_render('0000',614,68,BLACK,40)
             text_render(str(self.score),688,68,BLACK,40)
+
 
 
 
@@ -99,6 +101,7 @@ class PlayerShip(Sprite):
             self.health -= loss
             health.update(loss)
             health.draw()
+
 
 
 class Wasp(Sprite):
@@ -142,6 +145,7 @@ class Wasp(Sprite):
             self.kill()
         else:
             self.health -= amount
+
 
 
 class Aliens(Sprite):
@@ -415,10 +419,10 @@ while game:
     pship_group.draw(screen)
     wasp_baddies.draw(screen)
 
-    if 0 < unlimit < 100 and limitless == False:
+    if unlimit < 100 and unlimit > 0 and limitless == False:
         text_render("Unlimited Ammo: Just Hold Space!",15,570,WHITE,19)
         unlimit += 1
-    else:
+    elif unlimit >= 100 and limitless == False:
         limitless = True
         
 
