@@ -22,7 +22,7 @@ def text_render(text,x,y,color,size):
     font = pygame.font.Font(None, size)
     rend = font.render(text, True, color)
     screen.blit(rend, (x,y))
-
+        
 
 class HealthKeeper(Sprite):
     def __init__(self, surf):
@@ -170,6 +170,7 @@ class Aliens(Sprite):
         self.health = 10
         self.status = status
         self.add(group)
+        self.group = group
         self.xdirection = 1
         self.ydirection = 1
 
@@ -198,6 +199,9 @@ class Aliens(Sprite):
             self.kill()
         else:
             self.health -= amount
+
+    def self_intersect(self):
+        return pygame.sprite.spritecollideany(self,self.group)
 
 
 class EnemyExplosion(Sprite):
@@ -236,6 +240,25 @@ class BulletShoot(Sprite):
         self.add(group)
     def fire(self, direction):
         if self.rect.y - 16*direction <= 0 or self.rect.y - 16*direction >= 599:
+            self.kill()
+        self.rect.y -= 18*direction
+
+class MissleShoot(Sprite):
+    image = None
+    def __init__(self, ship, group, image=str('baddie_missile.png')):
+        Sprite.__init__(self)
+        if MissleShoot.image is None:
+            MissleShoot.image = load_graphics(image)
+        self.image = MissleShoot.image
+        self.rect = self.image.get_rect()
+        self.rect.x = ship.rect.x+20
+        self.rect.y = ship.rect.y+30
+        self.rect.w += 30 
+        self.add(group)
+    def collision_detection(self):
+        pass
+    def update(self,direction):
+        if self.rect.y -16*direction <= 0 or self.rect.y -16*direction >=599:
             self.kill()
         self.rect.y -= 18*direction
 
@@ -326,6 +349,7 @@ enemies = Group()
 your_bullets = Group()
 enemy_bullets = Group()
 explosions = Group()
+enemy_missiles = Group()
 health = HealthKeeper(screen)
 score = ScoreKeeper(screen)
 
@@ -358,7 +382,7 @@ while begin:   #loop to start game
                 if evt.key == K_SPACE:
                     game = True
                     begin = False
-
+                
     pygame.display.flip()
     clock.tick(FPS)
 
@@ -432,6 +456,28 @@ while game: #main game loop
     for i in enemy_bullets:
         i.fire(-1)
     enemy_bullets.draw(screen)
+
+    if len(enemies) < 5 and unlimit == -1:
+        length = len(enemies)
+        if length == 4:
+            ayn = 158
+        elif length == 3:
+            ayn = 80
+        elif length == 2:
+            ayn = 40
+        else:
+            ayn = 16
+        for enemy in enemies:
+            i = random.randrange(ayn)
+            if i == 0:
+                MissleShoot(enemy, enemy_missiles)
+                
+                
+    if len(enemy_missiles) > 0:
+        for player in pygame.sprite.groupcollide(pship_group,enemy_missiles, False, True):
+            player.hurt(3)
+        enemy_missiles.update(-1)
+        enemy_missiles.draw(screen)
     
 
     #collide functions for player, bullets, stuff...
