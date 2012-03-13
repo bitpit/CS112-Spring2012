@@ -15,7 +15,7 @@ def load_graphics(filename):
     except pygame.error, message:
         print 'Cannot load', fullfname
         raise SystemExit, message
-    return image, image.get_rect()
+    return image
 
 
 def text_render(text,x,y,color,size):
@@ -39,6 +39,7 @@ class HealthKeeper(Sprite):
 
     def draw(self):
         pygame.draw.rect(self.surface, BLACK, ((620, 570),(160,11)))
+        pygame.draw.line(self.surface,(150,150,150),(625,575),(775,575),3)
         if self.length > 0:
             pygame.draw.line(self.surface,(255,0,0),(625,575),(625+self.length,575),3)
 
@@ -75,9 +76,13 @@ class ScoreKeeper(Sprite):
 
 
 class PlayerShip(Sprite):
+    image = None
     def __init__(self, x=260, y=500):
         Sprite.__init__(self)
-        self.image, self.rect = load_graphics('player_ship.png')
+        if PlayerShip.image is None:
+            PlayerShip.image = load_graphics('player_ship.png')
+        self.image = PlayerShip.image
+        self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.add(pship_group)
@@ -105,14 +110,18 @@ class PlayerShip(Sprite):
 
 
 class Wasp(Sprite):
+    image = None
     def __init__(self, x, y, status, group):
         Sprite.__init__(self)
-        self.image, self.rect = load_graphics('wasp_baddie.png')
+        if Wasp.image is None:
+            Wasp.image = load_graphics('wasp_baddie.png')
+        self.image = Wasp.image
+        self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.direction = 1
         self.newy = y+90
-        self.health = 4
+        self.health = 3
         self.status = status
         self.add(group)
 
@@ -133,7 +142,7 @@ class Wasp(Sprite):
             self.rect.y += 25
         else:
             if self.rect.y < 190:
-                newwasp = Wasp(-15,50,0,wasp_baddies)
+                newwasp = Wasp(-15,50,0,enemies)
             self.direction *= -1
             self.newy += 90
 
@@ -149,9 +158,13 @@ class Wasp(Sprite):
 
 
 class Aliens(Sprite):
+    image = None
     def __init__(self, x, y, status, group):
         Sprite.__init__(self)
-        self.image, self.rect = load_graphics('ws_baddie.png')
+        if Aliens.image is None:
+            Aliens.image = load_graphics('ws_baddie.png')
+        self.image = Aliens.image
+        self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.health = 10
@@ -175,7 +188,7 @@ class Aliens(Sprite):
         self.rect.y += dy*self.ydirection
         fire = random.randrange(7)
         if fire == 4:
-            BulletShoot(self, enemy_bullets)
+            BulletShoot(self, enemy_bullets,str('evilbullet.png'))
 
     def hurt(self, amount):
         if self.health - amount <= 0:
@@ -188,12 +201,12 @@ class Aliens(Sprite):
 
 
 class EnemyExplosion(Sprite):
-    def __init__(self, position):
+    def __init__(self, position, radius=5):
         Sprite.__init__(self)
         self.position = position
         self.duration = 10
         self.expandto = 18
-        self.radius = 5
+        self.radius = radius
         self.add(explosions)
         
     def update(self):
@@ -211,9 +224,13 @@ class EnemyExplosion(Sprite):
 
 
 class BulletShoot(Sprite):
-    def __init__(self, ship, group):
+    image = None
+    def __init__(self, ship, group, image=str('bullet.png')):
         Sprite.__init__(self)
-        self.image, self.rect = load_graphics('bullet.png')
+        if BulletShoot.image is None:
+            BulletShoot.image = load_graphics(image)
+        self.image = BulletShoot.image
+        self.rect = self.image.get_rect()
         self.rect.x = ship.rect.x+30
         self.rect.y = ship.rect.y
         self.add(group)
@@ -222,6 +239,49 @@ class BulletShoot(Sprite):
             self.kill()
         self.rect.y -= 18*direction
 
+
+class RenderText(object):
+    def __init__(self):
+        self._intro1 = str("Use arrows to move, space to fire,")
+        self._intro2 = str("and esc to pause during gameplay.")
+        self._intro3 = str("Press space to begin.")
+    def intro_text(self):
+        text_render(self._intro1,230,225,WHITE,30)
+        text_render(self._intro2,259,248,WHITE,24)
+        text_render(self._intro3,180,285,WHITE,60)
+
+
+class GameEvents(object):
+    def __init__(self):
+        self.clock = clock 
+    def make_start_enemies(self):
+        bx = 490
+        by = 50
+        for i in range(5):
+            p = Wasp(bx,by,1,enemies)
+            bx -= 66
+    def draw_sidebar(self):
+        pygame.draw.rect(screen, (210,210,210), info_rect)
+        pygame.draw.line(screen, WHITE, (600,0),(600,600), 3)
+        Wasp(635,160,1,sidebar_stuff)
+        text_render(" = 300 pts", 690,182,(90,90,90),27)
+        Aliens(638,280,1,sidebar_stuff)
+        text_render(" = 600 pts", 693,302,(90,90,90),27)
+        text_render("Ship Power",649,545,(80,80,80),24)
+    def step(self):
+        self.clock.tick(FPS)
+        for evt in pygame.event.get():
+            if evt.type == QUIT:
+                exit()
+            elif evt.type == KEYDOWN: 
+                if evt.key == K_ESCAPE:
+                    exit()
+                if evt.key == K_SPACE:
+                    game = True
+                    begin = False
+        
+
+    
 
 
 ##########
@@ -237,45 +297,41 @@ FPS = 30
 ############
 #initialize#
 ############
+#pygame magic
 pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
-game = False
-won = False
-begin = True
-phase2 = False
-pause = False
 screen.fill(BLACK)
-pygame.display.set_caption('rockets:moneyhole')
-unlimit = -1
-limitless = False
+pygame.display.set_caption('glax')
 
-screen_rect = pygame.Rect((0,0),(600,600))
-info_rect = pygame.Rect((600,0),(200,600))
+#booleans for game functions
+game = False #game starts game
+won = False #won is if you win, which is currently impossible
+begin = True  #begin controls loop for start screen
+phase2 = False #controls display of loop saying 'unlimited ammo'
+unlimit = -1 #also controls display of 'unlimited ammo'
+limitless = False #also for unlimited
+pause = False #self explanitory
 
-bounds = screen_rect
-
-pship_group = Group()
-ship = PlayerShip()
-
-wasp_baddies = Group()
+#make some objects
+screen_rect = pygame.Rect((0,0),(600,600)) #objects dealing with window stuff
+info_rect = pygame.Rect((600,0),(200,600)) 
+bounds = screen_rect  
 sidebar_stuff = Group()
+writetext = RenderText() #and text stuff
 
+pship_group = Group() #objects dealing with game stuff
+ship = PlayerShip() 
+enemies = Group()
 your_bullets = Group()
 enemy_bullets = Group()
-
 explosions = Group()
-
 health = HealthKeeper(screen)
 score = ScoreKeeper(screen)
 
+doEvent = GameEvents() #used to control game stuff
 
-#creates start enemies
-bx = 490
-by = 50
-for i in range(5):
-    p = Wasp(bx,by,1,wasp_baddies)
-    bx -= 66
+
 
 
 #set key repeats for movement
@@ -288,43 +344,33 @@ move = 0
 ######
 pygame.draw.rect(screen,BLACK,screen_rect)
 
-#intro text
-text_render("Use arrows to move, space to fire,",230,225,WHITE,30)
-text_render("and esc to pause during gameplay.",259,248,WHITE,24)
-text_render("Press space to begin.",180,285,WHITE,60)
+writetext.intro_text()
 
-while begin:
+doEvent.make_start_enemies()
+
+while begin:   #loop to start game
     for evt in pygame.event.get():
-        if evt.type == QUIT:
-            exit()
-        elif evt.type == KEYDOWN: 
-            if evt.key == K_ESCAPE:
+            if evt.type == QUIT:
                 exit()
-            if evt.key == K_SPACE:
-                game = True
-                begin = False
-
+            elif evt.type == KEYDOWN: 
+                if evt.key == K_ESCAPE:
+                    exit()
+                if evt.key == K_SPACE:
+                    game = True
+                    begin = False
 
     pygame.display.flip()
     clock.tick(FPS)
 
 
 #create sidebar stuff
-pygame.draw.rect(screen, (210,210,210), info_rect)
-pygame.draw.line(screen, WHITE, (600,0),(600,600), 3)
-
-Wasp(635,160,1,sidebar_stuff)
-text_render(" = 300 pts", 690,182,(90,90,90),27)
-Aliens(638,280,1,sidebar_stuff)
-text_render(" = 600 pts", 693,302,(90,90,90),27)
+doEvent.draw_sidebar()
 sidebar_stuff.draw(screen)
-text_render("Ship Power",649,545,(80,80,80),24)
 health.draw()
 score.draw()
-text_render("Score",720,25,BLACK,34)
 
 
-while game:
+while game: #main game loop
     pygame.draw.rect(screen,BLACK,screen_rect)
     
     #input for exit
@@ -372,7 +418,7 @@ while game:
     if move < 2:
         move += 1
     else:
-        wasp_baddies.update()
+        enemies.update()
         move = 0
     
     #update bullets
@@ -380,7 +426,7 @@ while game:
         i.fire(1)
     your_bullets.draw(screen)
 
-    for enemy in pygame.sprite.groupcollide(wasp_baddies, your_bullets, False, True):
+    for enemy in pygame.sprite.groupcollide(enemies, your_bullets, False, True):
         enemy.hurt(1)
             
     for i in enemy_bullets:
@@ -388,9 +434,10 @@ while game:
     enemy_bullets.draw(screen)
     
 
+    #collide functions for player, bullets, stuff...
     for player in pygame.sprite.groupcollide(pship_group,enemy_bullets, False, True):
         player.hurt(1)
-    for player in pygame.sprite.groupcollide(pship_group,wasp_baddies, False, False):
+    for player in pygame.sprite.groupcollide(pship_group,enemies, False, False):
         player.hurt(17)
 
     
@@ -399,13 +446,14 @@ while game:
         i.update()
         i.draw(screen)
 
-        
-    if len(wasp_baddies) == 0:
+      
+#spawn new enemies all the first stage ones are killed or all the 2nd stage ones
+    if len(enemies) == 0:
         x = 0
         y = -30
         unlimit = 1
         for i in range(6):
-            Aliens(x, y, 0, wasp_baddies)
+            Aliens(x, y, 0, enemies)
             x += 90
             
 
@@ -415,10 +463,13 @@ while game:
         game = False
 
 
-    #draw 
+    #draw updates
     pship_group.draw(screen)
-    wasp_baddies.draw(screen)
+    enemies.draw(screen)
 
+
+
+    #shows the unlimited ammo warning if unlocked
     if unlimit < 100 and unlimit > 0 and limitless == False:
         text_render("Unlimited Ammo: Just Hold Space!",15,570,WHITE,19)
         unlimit += 1
@@ -427,12 +478,19 @@ while game:
         
 
 
-    #update
+    #update the screen
     pygame.display.flip()
     clock.tick(FPS)
 
 
 #//END OF GAME LOOP
+finalbomb = EnemyExplosion((325,325),30)
+while finalbomb.expandto > finalbomb.radius:
+    finalbomb.update() 
+    finalbomb.draw(screen)
+    pygame.display.flip()
+    clock.tick(FPS)
+    
 
 pygame.draw.rect(screen,WHITE,((70,170),(660,230)))
 
