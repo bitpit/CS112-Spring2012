@@ -23,25 +23,67 @@ def text_render(text,x,y,color,size, surface):
     rend = font.render(text, True, color)
     surface.blit(rend, (x,y))
 
+
 class Person(Sprite):
     image = None
-    def __init__(self, x, y, status, group, sprite):
+    def __init__(self, x, y, status, other, sprite):
         Sprite.__init__(self)
         if self.image is None:
             self.image = load_graphics(str(sprite))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.group = group
+        self.group = other
         self.status = status
-        self.add(group)
+        #self.add(other)
 
 class Wasp(Person):
-    def __init__(self, x, y, status, group, sprite="wasp_baddie.png"):
-        Person.__init__(self, x, y, status, group, sprite)
+    def __init__(self, x, y, status, other, sprite="wasp_baddie.png"):
+        Person.__init__(self, x, y, status, other, sprite)
         self.direction = 1
         self.newy = y+90
         self.health = 3
+        self.update = 0
+        
+    
+    def update(self):
+        print 'in ere'
+        self.speed = self.get_speed()
+        new_space = self.get_space()
+
+        if self.status == 0:
+            status = self.get_status()
+        
+        self.newrect = self.rect.move(new_space)
+        self.rect = self.newrect
+    
+    def get_speed(self):
+        if self.rect.y > 318:
+            return 10
+        elif self.rect.y > 402:
+            return 13
+        else:
+            return 8
+
+    def get_space(self):
+        if self.status == 0:
+            return (10,0)
+        elif 50 < self.rect.x +self.speed*self.direction < 540:
+            return ((self.speed*self.direction,0))
+        elif self.rect.y < self.newy:
+            return (0,25)
+        else:
+            if self.rect.y < 190:
+                Wasp(-15,50,0,self.group)
+            self.direction *= -1
+            self.newy += 90
+
+    def get_status(self):
+        if self.status == 0 and self.rect.x >= 60:
+            self.status = 1
+        
+        
+        
 
 class Aliens(Person):
     def __init__(self, x, y, status, group, sprite="ws_baddie.png"):
@@ -49,6 +91,7 @@ class Aliens(Person):
         self.health = 10
         self.xdirection = 1
         self.ydirection = 1
+
 
 
 class PlayerShip(Person):
@@ -79,6 +122,7 @@ class Make(object):
 
         self.make_start = True
 
+
     def start_screen(self):
         if self.make_start:
             white = self.white
@@ -86,7 +130,7 @@ class Make(object):
             text_render("Use arrows to move, space to fire,",230,225,white,30,screen)
             text_render("and  esc  to  pause  during  gameplay.",244,248,white,24,screen)
             text_render("Press space to begin.",180,285,white,60,screen)
-            self.make_start = False
+            
 
     def game_screen(self):
         pygame.draw.rect(self.screen, (210,210,210), self.info_rect)
@@ -97,6 +141,12 @@ class Make(object):
         text_render(" = 600 pts", 693,302,(90,90,90),27,self.screen)
         text_render("Ship Power",649,545,(80,80,80),24,self.screen)
 
+    def start_enemies(self, bx, by, status, other):
+        if self.make_start:
+            for i in range(5):
+                #Wasp(bx,by,1,other.enemies)
+                bx -= 66
+            self.make_start = False
 
 
 class Game(object):
@@ -115,6 +165,7 @@ class Game(object):
         self.game = False
         self.sidebar = True
         self.start_screen = True
+        self.start_render = True
         self.fps = 30
 
         group = pygame.sprite.Group()
@@ -131,8 +182,8 @@ class Game(object):
         self.black = ((0,0,0))
 
         self.make = Make(self.screen, (255,255,255),self.black, self.sidebar_stuff)
-        
 
+      
     def pause(self, boolean):
         if boolean:
             self.paused = True
@@ -150,8 +201,14 @@ class Game(object):
     def start_step(self):
         self.clock.tick(self.fps)
 
+        if self.start_render:
+            self.make.start_screen()
+            bx = 490
+            for i in range(5):
+                self.enemies.add(Wasp(bx,50,1,self.enemies))
+                bx -= 66
+            self.start_render = False
 
-        self.make.start_screen()
 
         for evt in pygame.event.get():
             if evt.type == QUIT:
@@ -160,6 +217,7 @@ class Game(object):
                 if evt.key == K_ESCAPE:
                     self.quit()
                 if evt.key == K_SPACE:
+                    self.start_screen = False
                     self.game = True
 
         pygame.display.flip()
@@ -197,16 +255,27 @@ class Game(object):
             if pressed[K_DOWN]:
                 self.ship.update(0,8)
 
-        
+            
+            self.enemies.update()
+            #groupo.update()
             pygame.draw.rect(self.screen,self.black,self.screen_rect)
             
             self.player.draw(self.screen)
-        
+            self.enemies.draw(self.screen)
+            #groupo.draw(self.screen)
         pygame.display.flip()
 
 
     def game_over(self):
-        pass
+        self.clock.tick (self.fps)
+
+        for evt in pygame.event.get():
+            if evt.type == QUIT:
+                self.quit()
+            elif evt.type == KEYDOWN and evt.key == K_ESCAPE:
+                self.start_screen = True
+
+        pygame.display.flip()
 
     def run(self):
         self.done = False
@@ -220,6 +289,8 @@ class Game(object):
                 self.game_over()
 
 
+groupo = Group()
 Game().run()
 
 
+groupo = Group()
