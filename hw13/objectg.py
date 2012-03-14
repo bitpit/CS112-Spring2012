@@ -23,6 +23,56 @@ def text_render(text,x,y,color,size, surface):
     rend = font.render(text, True, color)
     surface.blit(rend, (x,y))
 
+class Keeper(Sprite):
+    def __init__(self, surf):
+        Sprite.__init__(self)
+        self.surface = surf
+    def update(self):
+        pass
+    def draw(self):
+        pass
+
+class ScoreKeeper(Keeper):
+    def __init__(self, surf):
+        Keeper.__init__(self, surf)
+        self.score = int(0000000000)
+    def update(self):
+        self.score += amount
+    def draw(self):
+        pygame.draw.rect(self.surface, self.black, ((610,55),(180,50)))
+        pygame.draw.rect(self.surface, (180,180,180), ((612,57),(176,46)))
+        if self.score == 0:
+            text_render('0000000000',614,68,self.black,40)
+        elif self.score < 1000:
+            text_render('0000000',614,68,self.black,40)
+            text_render(str(self.score),733,68,self.black,40)
+        elif self.score < 10000:
+            text_render('000000',614,68,self.black,40)
+            text_render(str(self.score),718,68,self.black,40)
+        elif self.score < 100000:
+            text_render('00000',614,68,self.black,40)
+            text_render(str(self.score),703,68,self.black,40)
+        elif self.score < 1000000:
+            text_render('0000',614,68,self.black,40)
+            text_render(str(self.score),688,68,self.black,40)
+
+class HealthKeeper(Keeper):
+    def __init__(self, surf):
+        Keeper.__init__(self, surf)
+        self.length = 150
+        self.black = ((0,0,0))
+    def update(self, loss=1):
+        loss *= 3
+        if self.length - loss >= 0:
+            self.length -= loss
+        else:
+            self.length = 0
+    def draw(self):
+        pygame.draw.rect(self.surface, self.black, ((620, 570),(160,11)))
+        pygame.draw.line(self.surface,(150,150,150),(625,575),(775,575),3)
+        if self.length > 0:
+            pygame.draw.line(self.surface,(255,0,0),(625,575),(625+self.length,575),3)
+
 
 class Person(Sprite):
     image = None
@@ -35,12 +85,15 @@ class Person(Sprite):
         self.rect.y = y
         self.group = group
         self.status = status
+        self.should_update = 0
         self.add(group)
     def hurt(self, loss, update_health=False):
         if self.health - loss <= 0:
             self.kill()
+            return True
         else:
             self.health -= loss
+            return False
 
 
 class Wasp(Person):
@@ -49,10 +102,9 @@ class Wasp(Person):
         self.direction = 1
         self.newy = self.rect.y+90
         self.health = 3
-        self.should_update = 0
-         
+                 
     def update(self):
-        if self.should_update == 1: #gives it that nice old arcade slowness
+        if self.should_update == 2: #gives it that nice old arcade slowness
             self.speed = self.get_speed()
             new_space = self.get_space()
         
@@ -98,8 +150,32 @@ class Aliens(Person):
     def __init__(self, x, y, status, group, sprite="ws_baddie.png"):
         Person.__init__(self, x, y, status, group, sprite)
         self.health = 10
-        self.xdirection = 1
+        self.xdirection = -1
         self.ydirection = 1
+        self.health = 10
+    def update(self):
+        if self.should_update == 2:
+            dx = random.randrange(-30,30)
+            dy = random.randrange(-30,30)
+            dy = random.randrange(-30,30)
+            if self.status == 0 and self.rect.y < 25:
+                self.rect.y += 10
+            elif self.status == 0:
+                self.status = 1
+            if self.rect.y < 0:
+                self.rect.y = 3
+            if self.rect.x < 0:
+                self.rect.x = 3
+            if self.rect.x + dx*self.xdirection > 540 or self.rect.x + dx*self.xdirection < 20:
+                self.xdirection *= -1
+            if self.rect.y + dy*self.ydirection > 480 or self.rect.y + dy*self.ydirection < 15:
+                self.ydirection *= -1
+            self.rect.x += dx*self.xdirection
+            self.rect.y += dy*self.ydirection
+            self.should_update = 0
+        else:
+            self.should_update += 1
+
 
 
 class PlayerShip(Person):
@@ -120,7 +196,7 @@ class PlayerShip(Person):
 
 class Bullet(Sprite):
     image = None
-    def __init__(self, shooter, group, direction, sprite='bullet.png'):
+    def __init__(self, shooter, group, direction=1, sprite='bullet.png'):
         Sprite.__init__(self)
         if self.image is None:
             self.image = load_graphics(sprite)
@@ -135,8 +211,52 @@ class Bullet(Sprite):
             self.kill()
         self.rect.y -= 22*self.direction
 
-                                    
+class EnemyBullets(Bullet):
+    def __init__(self, shooter, group, direction=1, sprite='evilbullet.png'):
+        Bullet.__init__(self, shooter, group, direction, sprite)
+        self.direction = direction
+    def update(self, speed):
+        if self.rect.y - speed*self.direction <= 0 or self.rect.y-speed*self.direction >= 599:
+            self.kill()
+        self.rect.y -= speed+2*self.direction*-1
+    
+def complex_bullet_algorithm(enemy_group, seed):
+        ayn = seed
+        length = len(enemy_group)
+        if length > 5 or length == 5:
+            ayn *= 16
+        elif length == 4:
+            ayn *= 10
+        elif length == 3:
+            ayn *= 6
+        elif length == 2:
+            ayn *= 4
+        else:
+            ayn *= 2
+        i = random.randrange(ayn)
+        if i == 0:
+            return True
 
+
+class EnemyExplosion(Sprite):
+    def __init__(self, position, group, radius=5):
+        Sprite.__init__(self)
+        self.position = position
+        self.duration = 10
+        self.expandto = 14
+        self.radius = radius
+        self.group = group
+        self.add(group)
+    def update(self):
+        if self.expandto > self.radius:
+            self.radius += 3
+        else:
+            self.kill()
+    def random_color(self):
+        return ((random.randrange(120,256),255,random.randrange(120,256)))
+    def draw(self, surf):
+        pygame.draw.circle(surf, self.random_color(), self.position, self.radius)
+                                                
 class Make(object):
     def __init__(self, screen, white, black, sbs):
         self.screen = screen
@@ -189,7 +309,8 @@ class Game(object):
             pygame.display.set_caption(self.title)
 
         self.paused = False
-        self.game = False
+        self.game1 = False
+        self.game2 = False
         self.sidebar = True
         self.start_screen = True
         self.start_render = True
@@ -200,6 +321,7 @@ class Game(object):
        
         self.player = pygame.sprite.Group()
         self.ship = PlayerShip(260, 500, 0, self.player)
+        self.player_health = HealthKeeper(self.screen)
         self.enemies = pygame.sprite.Group()
         self.player_bullets = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
@@ -209,7 +331,6 @@ class Game(object):
         self.black = ((0,0,0))
 
         self.make = Make(self.screen, (255,255,255),self.black, self.sidebar_stuff)
-
       
     def pause(self, boolean):
         if boolean:
@@ -222,8 +343,6 @@ class Game(object):
     def quit(self):
         self.done = True
 
-    def update(self):
-        pass
 
     def start_step(self):
         self.clock.tick(self.fps)
@@ -242,20 +361,27 @@ class Game(object):
                     self.quit()
                 if evt.key == K_SPACE:
                     self.start_screen = False
-                    self.game = True
+                    self.game1 = True
 
         pygame.display.flip()
         
         
     
-    def game_step(self):
+    def game_step_1(self):
         self.clock.tick(self.fps)
+
+        #checks to see if all enemies are dead and if so advances player to
+        #stage 2
+        if len(self.enemies) == 0:
+            self.game2 = True
+            self.game1 = False
 
         if self.sidebar:
             self.make.game_screen()
             self.sidebar_stuff.draw(self.screen)
             self.sidebar = False
         
+        #get events
         for evt in pygame.event.get():
             if evt.type == QUIT:
                 self.quit()
@@ -285,18 +411,121 @@ class Game(object):
             if pressed[K_DOWN]:
                 self.ship.update(0,8)
 
+            #fill screen with blackness
             pygame.draw.rect(self.screen,self.black,self.screen_rect)
   
             self.enemies.update()
+
+            #check collosion of self and enemies
+            for player in pygame.sprite.groupcollide(self.player, self.enemies, False, False):
+                over = player.hurt(17)
+                self.player_health.update(17)
+                if over:
+                    self.game1 = False
+
+            #check collosion of player bullets/update/draw player bullets 
             if len(self.player_bullets) > 0:
                 for enemy in pygame.sprite.groupcollide(self.enemies, self.player_bullets, False, True):
-                    enemy.hurt(1)
+                    explode = enemy.hurt(1)
+                    if explode:
+                        EnemyExplosion((enemy.rect.x+3,enemy.rect.y+15),self.explosions, 5)
                 self.player_bullets.update()
                 self.player_bullets.draw(self.screen)
+
+            #update/draw explosions if they exist
+            if len(self.explosions) > 0:
+                self.explosions.update()
+                for i in self.explosions:
+                    i.draw(self.screen)
                                     
+            #draw the rest of the stuff
             self.player.draw(self.screen)
             self.enemies.draw(self.screen)
+            self.player_health.draw()
                         
+        pygame.display.flip()
+
+    def game_step_2(self):
+        self.clock.tick(self.fps)
+
+        #keep givin em enemies
+        if len(self.enemies) == 0:
+            x = 0
+            y = -30
+            for i in range(6):
+                Aliens(x, y, 0, self.enemies)
+                x += 90
+                
+        #get events
+        for evt in pygame.event.get():
+            if evt.type == QUIT:
+                self.quit()
+            elif evt.type == KEYDOWN:
+                if evt.key == K_ESCAPE:
+                    pygame.key.set_repeat()
+                    if self.paused:
+                        self.pause(False)
+                    elif not self.paused:
+                        self.pause(True)
+                if evt.key == K_p:
+                    print self.enemy_bullets.sprites()
+
+        
+        if not self.paused:
+            pressed = pygame.key.get_pressed()
+            if pressed[K_LEFT]:
+                self.ship.update(-8,0)
+            if pressed[K_RIGHT]:
+                self.ship.update(8,0)
+            if pressed[K_UP]:
+                self.ship.update(0,-8)
+            if pressed[K_DOWN]:
+                self.ship.update(0,8)
+            if pressed[K_SPACE]:
+                Bullet(self.ship, self.player_bullets, 1)
+
+            #fill screen with blackness
+            pygame.draw.rect(self.screen,self.black,self.screen_rect)
+  
+            #update enemies/generate bullets
+            for sprite in self.enemies:
+                if complex_bullet_algorithm(self.enemies, 2):
+                    EnemyBullets(sprite, self.enemy_bullets, 16)
+            self.enemies.update()
+            
+            #update/draw/do collosions for enemy bullets if there are any
+            if len(self.enemy_bullets) > 0:
+                self.enemy_bullets.update(9)#speed
+                self.enemy_bullets.draw(self.screen)
+                for player in pygame.sprite.groupcollide(self.player,self.enemy_bullets, False, True):
+                    over = player.hurt(2)
+                    self.player_health.update(2)
+                    if over:
+                        self.game1 = False
+            
+            #update/draw explosions if they exist
+            if len(self.explosions) > 0:
+                self.explosions.update()
+                for i in self.explosions:
+                    i.draw(self.screen)
+
+            #update/draw/check collision for player bullets if they exist
+            if len(self.player_bullets) > 0:
+                for enemy in pygame.sprite.groupcollide(self.enemies, self.player_bullets, False, True):
+                    explode = enemy.hurt(1)
+                    if explode:
+                        EnemyExplosion((enemy.rect.x+3,enemy.rect.y+15),self.explosions, 5)
+                self.player_bullets.update()
+                self.player_bullets.draw(self.screen)
+
+
+                    
+
+            #draw the rest of the stuff
+            self.player.draw(self.screen)
+            self.enemies.draw(self.screen)
+            self.player_health.draw()
+
         pygame.display.flip()
 
 
@@ -315,16 +544,16 @@ class Game(object):
         self.done = False
         self.clock = pygame.time.Clock()
         while not self.done:
-            if self.game:
-                self.game_step()
+            if self.game1:
+                self.game_step_1()
+            elif self.game2:
+                self.game_step_2()
             elif self.start_screen:
                 self.start_step()
             else:
                 self.game_over()
 
 
-groupo = Group()
 Game().run()
 
 
-groupo = Group()
