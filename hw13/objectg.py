@@ -26,50 +26,58 @@ def text_render(text,x,y,color,size, surface):
 
 class Person(Sprite):
     image = None
-    def __init__(self, x, y, status, other, sprite):
+    def __init__(self, x, y, status, group, sprite):
         Sprite.__init__(self)
         if self.image is None:
             self.image = load_graphics(str(sprite))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.group = other
+        self.group = group
         self.status = status
-        #self.add(other)
+        self.add(group)
+    def hurt(self, loss, update_health=False):
+        if self.health - loss <= 0:
+            self.kill()
+        else:
+            self.health -= loss
+
 
 class Wasp(Person):
-    def __init__(self, x, y, status, other, sprite="wasp_baddie.png"):
-        Person.__init__(self, x, y, status, other, sprite)
+    def __init__(self, x, y, status, group, sprite="wasp_baddie.png"):
+        Person.__init__(self, x, y, status, group, sprite)
         self.direction = 1
-        self.newy = y+90
+        self.newy = self.rect.y+90
         self.health = 3
-        self.update = 0
-        
-    
+        self.should_update = 0
+         
     def update(self):
-        print 'in ere'
-        self.speed = self.get_speed()
-        new_space = self.get_space()
-
-        if self.status == 0:
-            status = self.get_status()
+        if self.should_update == 1: #gives it that nice old arcade slowness
+            self.speed = self.get_speed()
+            new_space = self.get_space()
         
-        self.newrect = self.rect.move(new_space)
-        self.rect = self.newrect
+            if self.status == 0:
+                self.get_status()
+                
+            self.newrect = self.rect.move(new_space)
+            self.rect = self.newrect
+            self.should_update = 0
+        else:
+            self.should_update += 1
     
     def get_speed(self):
         if self.rect.y > 318:
-            return 10
+            return 12
         elif self.rect.y > 402:
-            return 13
+            return 16
         else:
-            return 8
+            return 9
 
     def get_space(self):
         if self.status == 0:
             return (10,0)
-        elif 50 < self.rect.x +self.speed*self.direction < 540:
-            return ((self.speed*self.direction,0))
+        elif 50 < (self.rect.x+(self.speed*self.direction)) < 540:
+            return ((self.speed*self.direction),0)
         elif self.rect.y < self.newy:
             return (0,25)
         else:
@@ -77,6 +85,7 @@ class Wasp(Person):
                 Wasp(-15,50,0,self.group)
             self.direction *= -1
             self.newy += 90
+            return ((0,0))
 
     def get_status(self):
         if self.status == 0 and self.rect.x >= 60:
@@ -91,7 +100,6 @@ class Aliens(Person):
         self.health = 10
         self.xdirection = 1
         self.ydirection = 1
-
 
 
 class PlayerShip(Person):
@@ -109,6 +117,25 @@ class PlayerShip(Person):
         if dy < 0 and self.rect.y+dy>0:
             self.rect.y += dy 
 
+
+class Bullet(Sprite):
+    image = None
+    def __init__(self, shooter, group, direction, sprite='bullet.png'):
+        Sprite.__init__(self)
+        if self.image is None:
+            self.image = load_graphics(sprite)
+        self.rect = self.image.get_rect()
+        self.rect.x = shooter.rect.x+30
+        self.rect.y = shooter.rect.y
+        self.group = group
+        self.direction = direction
+        self.add(group)
+    def update(self):
+        if self.rect.y -22*self.direction <= 0 or self.rect.y - 16*self.direction >= 599:
+            self.kill()
+        self.rect.y -= 22*self.direction
+
+                                    
 
 class Make(object):
     def __init__(self, screen, white, black, sbs):
@@ -141,10 +168,10 @@ class Make(object):
         text_render(" = 600 pts", 693,302,(90,90,90),27,self.screen)
         text_render("Ship Power",649,545,(80,80,80),24,self.screen)
 
-    def start_enemies(self, bx, by, status, other):
+    def start_enemies(self, bx, by, status, enemies):
         if self.make_start:
             for i in range(5):
-                #Wasp(bx,by,1,other.enemies)
+                Wasp(bx,by,1,enemies)
                 bx -= 66
             self.make_start = False
 
@@ -203,10 +230,7 @@ class Game(object):
 
         if self.start_render:
             self.make.start_screen()
-            bx = 490
-            for i in range(5):
-                self.enemies.add(Wasp(bx,50,1,self.enemies))
-                bx -= 66
+            self.make.start_enemies(490, 50, 1, self.enemies)
             self.start_render = False
 
 
@@ -242,6 +266,12 @@ class Game(object):
                         self.pause(False)
                     elif not self.paused:
                         self.pause(True)
+                if evt.key == K_SPACE:
+                    pygame.key.set_repeat()
+                    Bullet(self.ship, self.player_bullets, 1,str('bullet.png'))
+            elif evt.type == KEYUP:
+                if evt.key == K_SPACE:
+                    pygame.key.set_repeat(45,1)
 
         
         if not self.paused:
@@ -255,14 +285,18 @@ class Game(object):
             if pressed[K_DOWN]:
                 self.ship.update(0,8)
 
-            
-            self.enemies.update()
-            #groupo.update()
             pygame.draw.rect(self.screen,self.black,self.screen_rect)
-            
+  
+            self.enemies.update()
+            if len(self.player_bullets) > 0:
+                for enemy in pygame.sprite.groupcollide(self.enemies, self.player_bullets, False, True):
+                    enemy.hurt(1)
+                self.player_bullets.update()
+                self.player_bullets.draw(self.screen)
+                                    
             self.player.draw(self.screen)
             self.enemies.draw(self.screen)
-            #groupo.draw(self.screen)
+                        
         pygame.display.flip()
 
 
