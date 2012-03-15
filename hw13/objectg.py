@@ -36,25 +36,26 @@ class ScoreKeeper(Keeper):
     def __init__(self, surf):
         Keeper.__init__(self, surf)
         self.score = int(0000000000)
-    def update(self):
+        self.black = (0,0,0)
+    def update(self, amount):
         self.score += amount
     def draw(self):
         pygame.draw.rect(self.surface, self.black, ((610,55),(180,50)))
         pygame.draw.rect(self.surface, (180,180,180), ((612,57),(176,46)))
         if self.score == 0:
-            text_render('0000000000',614,68,self.black,40)
+            text_render('0000000000',614,68,self.black,40,self.surface)
         elif self.score < 1000:
-            text_render('0000000',614,68,self.black,40)
-            text_render(str(self.score),733,68,self.black,40)
+            text_render('0000000',614,68,self.black,40,self.surface)
+            text_render(str(self.score),733,68,self.black,40,self.surface)
         elif self.score < 10000:
-            text_render('000000',614,68,self.black,40)
-            text_render(str(self.score),718,68,self.black,40)
+            text_render('000000',614,68,self.black,40,self.surface)
+            text_render(str(self.score),718,68,self.black,40,self.surface)
         elif self.score < 100000:
-            text_render('00000',614,68,self.black,40)
-            text_render(str(self.score),703,68,self.black,40)
+            text_render('00000',614,68,self.black,40,self.surface)
+            text_render(str(self.score),703,68,self.black,40,self.surface)
         elif self.score < 1000000:
-            text_render('0000',614,68,self.black,40)
-            text_render(str(self.score),688,68,self.black,40)
+            text_render('0000',614,68,self.black,40,self.surface)
+            text_render(str(self.score),688,68,self.black,40,self.surface)
 
 class HealthKeeper(Keeper):
     def __init__(self, surf):
@@ -101,7 +102,7 @@ class Wasp(Person):
         Person.__init__(self, x, y, status, group, sprite)
         self.direction = 1
         self.newy = self.rect.y+90
-        self.health = 3
+        self.health = 5
                  
     def update(self):
         if self.should_update == 2: #gives it that nice old arcade slowness
@@ -149,10 +150,10 @@ class Wasp(Person):
 class Aliens(Person):
     def __init__(self, x, y, status, group, sprite="ws_baddie.png"):
         Person.__init__(self, x, y, status, group, sprite)
-        self.health = 10
+        self.health = 18
         self.xdirection = -1
         self.ydirection = 1
-        self.health = 10
+        self.health = 20
     def update(self):
         if self.should_update == 2:
             dx = random.randrange(-30,30)
@@ -212,7 +213,7 @@ class Bullet(Sprite):
         self.rect.y -= 22*self.direction
 
 class EnemyBullets(Bullet):
-    def __init__(self, shooter, group, direction=1, sprite='evilbullet.png'):
+    def __init__(self, shooter, group, direction, sprite='evilbullet.png'):
         Bullet.__init__(self, shooter, group, direction, sprite)
         self.direction = direction
     def update(self, speed):
@@ -226,13 +227,13 @@ def complex_bullet_algorithm(enemy_group, seed):
         if length > 5 or length == 5:
             ayn *= 16
         elif length == 4:
-            ayn *= 10
+            ayn *= 16
         elif length == 3:
-            ayn *= 6
+            ayn *= 8
         elif length == 2:
             ayn *= 4
         else:
-            ayn *= 2
+            ayn *= 1
         i = random.randrange(ayn)
         if i == 0:
             return True
@@ -258,7 +259,7 @@ class EnemyExplosion(Sprite):
         pygame.draw.circle(surf, self.random_color(), self.position, self.radius)
                                                 
 class Make(object):
-    def __init__(self, screen, white, black, sbs):
+    def __init__(self, screen, white, black, sbs, score):
         self.screen = screen
         self.white = white
         self.black = black
@@ -266,6 +267,8 @@ class Make(object):
 
         self.screen_rect = pygame.Rect((0,0),(600,600))
         self.info_rect = pygame.Rect((600,0),(200,600))
+
+        self.score = score
 
         self.make_start = True
 
@@ -287,6 +290,7 @@ class Make(object):
         Aliens(638,280,1,self.sidebar_stuff)
         text_render(" = 600 pts", 693,302,(90,90,90),27,self.screen)
         text_render("Ship Power",649,545,(80,80,80),24,self.screen)
+        self.score.draw()
 
     def start_enemies(self, bx, by, status, enemies):
         if self.make_start:
@@ -311,6 +315,7 @@ class Game(object):
         self.paused = False
         self.game1 = False
         self.game2 = False
+        self.gameover = True
         self.sidebar = True
         self.start_screen = True
         self.start_render = True
@@ -319,6 +324,7 @@ class Game(object):
         group = pygame.sprite.Group()
         self.screen_rect = pygame.Rect((0,0),(600,600))
        
+        self.score = ScoreKeeper(self.screen)
         self.player = pygame.sprite.Group()
         self.ship = PlayerShip(260, 500, 0, self.player)
         self.player_health = HealthKeeper(self.screen)
@@ -328,9 +334,11 @@ class Game(object):
         self.explosions = pygame.sprite.Group()
         self.sidebar_stuff = pygame.sprite.Group()
 
+        self.unlimited_ammo = 0
+
         self.black = ((0,0,0))
 
-        self.make = Make(self.screen, (255,255,255),self.black, self.sidebar_stuff)
+        self.make = Make(self.screen, (255,255,255),self.black, self.sidebar_stuff,self.score)
       
     def pause(self, boolean):
         if boolean:
@@ -380,6 +388,15 @@ class Game(object):
             self.make.game_screen()
             self.sidebar_stuff.draw(self.screen)
             self.sidebar = False
+
+        #bombs
+        if len(self.enemies) < 5:
+            for sprite in self.enemies:
+                shouldbomb = complex_bullet_algorithm(self.enemies, 10)
+                if shouldbomb:
+                    EnemyBullets(sprite, self.enemy_bullets, 16, ('baddie_missile.png'))
+                
+            
         
         #get events
         for evt in pygame.event.get():
@@ -428,6 +445,8 @@ class Game(object):
                 for enemy in pygame.sprite.groupcollide(self.enemies, self.player_bullets, False, True):
                     explode = enemy.hurt(1)
                     if explode:
+                        self.score.update(300)
+                        self.score.draw()
                         EnemyExplosion((enemy.rect.x+3,enemy.rect.y+15),self.explosions, 5)
                 self.player_bullets.update()
                 self.player_bullets.draw(self.screen)
@@ -437,6 +456,17 @@ class Game(object):
                 self.explosions.update()
                 for i in self.explosions:
                     i.draw(self.screen)
+
+            #update/draw enemy bombs/check for collision if they exist
+            if len(self.enemy_bullets) > 0:
+                for bullets in pygame.sprite.groupcollide(self.enemy_bullets, self.player, True, False):
+                    over = self.ship.hurt(2)
+                    self.player_health.update(2)
+                    if over:
+                        self.game1 = False
+                self.enemy_bullets.update(9)
+                self.enemy_bullets.draw(self.screen)
+                            
                                     
             #draw the rest of the stuff
             self.player.draw(self.screen)
@@ -487,6 +517,11 @@ class Game(object):
             #fill screen with blackness
             pygame.draw.rect(self.screen,self.black,self.screen_rect)
   
+            #show text maybe?
+            if self.unlimited_ammo < 130:
+                text_render("Unlimited Ammo: Just Hold Space!",15,570,(255,255,255),19,self.screen)
+                self.unlimited_ammo += 1
+
             #update enemies/generate bullets
             for sprite in self.enemies:
                 if complex_bullet_algorithm(self.enemies, 2):
@@ -501,7 +536,7 @@ class Game(object):
                     over = player.hurt(2)
                     self.player_health.update(2)
                     if over:
-                        self.game1 = False
+                        self.game2 = False
             
             #update/draw explosions if they exist
             if len(self.explosions) > 0:
@@ -514,12 +549,20 @@ class Game(object):
                 for enemy in pygame.sprite.groupcollide(self.enemies, self.player_bullets, False, True):
                     explode = enemy.hurt(1)
                     if explode:
+                        self.score.update(600)
+                        self.score.draw()
                         EnemyExplosion((enemy.rect.x+3,enemy.rect.y+15),self.explosions, 5)
                 self.player_bullets.update()
                 self.player_bullets.draw(self.screen)
 
 
-                    
+            #check collisions for enemies and player
+            for player in pygame.sprite.groupcollide(self.player, self.enemies, False, False):
+                over = player.hurt(17)
+                self.player_health.update(17)
+                if over:
+                    self.game2 = False
+      
 
             #draw the rest of the stuff
             self.player.draw(self.screen)
@@ -531,12 +574,23 @@ class Game(object):
 
     def game_over(self):
         self.clock.tick (self.fps)
+        if self.gameover:
+            pygame.draw.rect(self.screen,(255,255,255),((70,170),(660,230)))
+            text_render('Game Over',110,230,self.black,150,self.screen)
+            text_render('Press r to return to title or q to quit', 126,340,self.black,40,self.screen)
+            self.gameover = False
 
         for evt in pygame.event.get():
             if evt.type == QUIT:
                 self.quit()
-            elif evt.type == KEYDOWN and evt.key == K_ESCAPE:
-                self.start_screen = True
+            if evt.type == KEYDOWN:
+                if evt.key == K_ESCAPE:
+                    self.start_screen = True
+                elif evt.key == K_q:
+                    self.quit()
+                elif evt.key == K_r:
+                    self.__init__()
+            
 
         pygame.display.flip()
 
