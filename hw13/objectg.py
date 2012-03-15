@@ -2,6 +2,7 @@
 #rewrite of hw13
 
 import random
+from random import randrange
 import pygame
 from pygame.locals import *
 from pygame.sprite import Sprite, Group, RenderUpdates
@@ -22,6 +23,7 @@ def text_render(text,x,y,color,size, surface):
     font = pygame.font.Font(None, size)
     rend = font.render(text, True, color)
     surface.blit(rend, (x,y))
+
 
 class Keeper(Sprite):
     def __init__(self, surf):
@@ -88,7 +90,7 @@ class Person(Sprite):
         self.status = status
         self.should_update = 0
         self.add(group)
-    def hurt(self, loss, update_health=False):
+    def hurt(self, loss):
         if self.health - loss <= 0:
             self.kill()
             return True
@@ -100,34 +102,25 @@ class Person(Sprite):
 class Wasp(Person):
     image1 = None
     image2 = None
+    image_hurt = None
     def __init__(self, x, y, status, group, sprite="wasp_baddie.png"):
         Person.__init__(self, x, y, status, group, sprite)
         self.direction = 1
         self.newy = self.rect.y+90
         self.health = 5
+        self.health_compare = self.health
         self.frame_update = 0
         self.frame = 0
         if self.image1 is None:
             self.image1 = self.image
         if self.image2 is None:
             self.image2 = load_graphics('wasp_baddie_2.png')
+        if self.image_hurt is None:
+            self.image_hurt = load_graphics('wasp_shoot.png')
                  
     def update(self):
-        if self.frame_update < 5:
-            self.frame_update += 1
-        elif self.frame_update == 5:
-            self.frame = 1
-            self.frame_update += 1
-        elif self.frame_update < 10:
-            self.frame_update += 1
-        else:
-            self.frame = 0
-            self.frame_update = 0
-        if self.frame == 0:
-            self.image = self.image1
-        elif self.frame == 1:
-            self.image = self.image2
         if self.should_update == 2: #gives it that nice old arcade slowness
+            self.animate()
             self.speed = self.get_speed()
             new_space = self.get_space()
         
@@ -165,8 +158,26 @@ class Wasp(Person):
     def get_status(self):
         if self.status == 0 and self.rect.x >= 60:
             self.status = 1
-        
-        
+
+    def animate(self):
+        if self.frame_update < 2:
+            self.frame_update += 1
+        elif self.frame_update == 3:
+            self.frame = 1
+            self.frame_update += 1
+        elif self.frame_update < 6:
+            self.frame_update += 1
+        else:
+            self.frame = 0
+            self.frame_update = 0
+        if self.health_compare > self.health:
+            self.image = self.image_hurt
+            #while self.health_compare > self.health:
+            self.health_compare -= 1
+        elif self.frame == 0:
+            self.image = self.image1
+        elif self.frame == 1:
+            self.image = self.image2
         
 
 class Aliens(Person):
@@ -321,3 +332,34 @@ class Make(object):
                 bx -= 66
             self.make_start = False
 
+
+
+
+class Star(object):
+    #uses ideas from method found at http://tinyurl.com/6snf424
+    max_stars = 150
+    fast_speed = 3
+    slow_speed = 1
+    speed = 2
+
+    def __init__(self,screen,screenw,screenh):
+        self.stars = []
+        self.screen = screen
+        self.height = screenh
+        self.width = screenw
+        for i in range(self.max_stars):
+            star = [randrange(0,self.width-1),randrange(0,self.height-1)]
+            self.stars.append(star)
+
+    def update(self):
+        for star in self.stars:
+            star[1] += self.speed
+            if star[1] >= self.height:
+                star[1] = 0
+                star[0] = randrange(0,self.width)
+
+    def draw(self):
+        for star in self.stars:
+            self.screen.set_at(star,(255,255,255))
+            
+            

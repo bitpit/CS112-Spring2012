@@ -43,6 +43,7 @@ class Game(object):
         self.explosions = pygame.sprite.Group()
         self.sidebar_stuff = pygame.sprite.Group()
 
+        self.stars = Star(self.screen,600,600)
         self.unlimited_ammo = 0
 
         self.black = ((0,0,0))
@@ -139,6 +140,10 @@ class Game(object):
 
             #fill screen with blackness
             pygame.draw.rect(self.screen,self.black,self.screen_rect)
+
+            #do starz
+            self.stars.update()
+            self.stars.draw()
   
             self.enemies.update()
 
@@ -285,7 +290,7 @@ class Game(object):
         self.clock.tick (self.fps)
         if self.gameover:
             pygame.draw.rect(self.screen,(255,255,255),((70,170),(660,230)))
-            text_render('Game Over',110,230,self.black,150,self.screen)
+            text_render('High Score!',110,230,self.black,150,self.screen)
             text_render('Press r to return to title or q to quit', 126,340,self.black,40,self.screen)
             self.gameover = False
 
