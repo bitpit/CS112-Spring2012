@@ -43,7 +43,7 @@ class Game(object):
         self.explosions = pygame.sprite.Group()
         self.sidebar_stuff = pygame.sprite.Group()
 
-        self.stars = Star(self.screen,600,600)
+        self.stars = Star(self.screen,600,600,200)
         self.unlimited_ammo = 0
 
         self.black = ((0,0,0))
@@ -142,7 +142,7 @@ class Game(object):
             pygame.draw.rect(self.screen,self.black,self.screen_rect)
 
             #do starz
-            self.stars.update()
+            self.stars.update()    
             self.stars.draw()
   
             self.enemies.update()
@@ -230,6 +230,10 @@ class Game(object):
 
             #fill screen with blackness
             pygame.draw.rect(self.screen,self.black,self.screen_rect)
+            
+            #do starz
+            self.stars.update()    
+            self.stars.draw()
   
             #show text maybe?
             if self.unlimited_ammo < 130:
@@ -238,7 +242,7 @@ class Game(object):
 
             #update enemies/generate bullets
             for sprite in self.enemies:
-                if complex_bullet_algorithm(self.enemies, 2):
+                if complex_bullet_algorithm(self.enemies, 1):
                     EnemyBullets(sprite, self.enemy_bullets, 16)
             self.enemies.update()
             

@@ -2,7 +2,7 @@
 #rewrite of hw13
 
 import random
-from random import randrange
+from random import randrange, choice
 import pygame
 from pygame.locals import *
 from pygame.sprite import Sprite, Group, RenderUpdates
@@ -213,11 +213,17 @@ class Aliens(Person):
 
 
 class PlayerShip(Person):
+    hurting = None
     def __init__(self, x, y, status, group, sprite="player_ship.png"):
         Person.__init__(self, x, y, status, group, sprite)
         self.health = 50
+        self.health_update = self.health*4
+        self.healthy = self.image
+        if self.hurting is None:
+            self.hurting = load_graphics('player_shoot.png')
 
     def update(self, dx, dy):
+        self.animate()
         if dx > 0 and self.rect.x+dx < 600-self.rect.w:
             self.rect.x += dx
         if dx < 0 and self.rect.x+dx > 0:
@@ -226,6 +232,13 @@ class PlayerShip(Person):
             self.rect.y += dy 
         if dy < 0 and self.rect.y+dy>0:
             self.rect.y += dy 
+
+    def animate(self):
+        if self.health_update > self.health*4:
+            self.image = self.hurting
+            self.health_update -= 1
+        else:
+            self.image = self.healthy
 
 
 class Bullet(Sprite):
@@ -337,29 +350,31 @@ class Make(object):
 
 class Star(object):
     #uses ideas from method found at http://tinyurl.com/6snf424
-    max_stars = 150
-    fast_speed = 3
-    slow_speed = 1
-    speed = 2
-
-    def __init__(self,screen,screenw,screenh):
+    def __init__(self,screen,screenw,screenh,max_stars):
         self.stars = []
         self.screen = screen
         self.height = screenh
         self.width = screenw
+        self.max_stars = max_stars
         for i in range(self.max_stars):
-            star = [randrange(0,self.width-1),randrange(0,self.height-1)]
+            star = [randrange(0,self.width-1),randrange(0,self.height-1),choice([1,2,3])]
+            if star[2] == 1:
+                star.append((170,170,170))
+            elif star[2] == 2:
+                star.append((210,210,210))
+            else:
+                star.append((255,255,255))
             self.stars.append(star)
 
     def update(self):
         for star in self.stars:
-            star[1] += self.speed
+            star[1] += star[2]
             if star[1] >= self.height:
                 star[1] = 0
                 star[0] = randrange(0,self.width)
+                star[2] = choice([1,2,3])
 
     def draw(self):
         for star in self.stars:
-            self.screen.set_at(star,(255,255,255))
-            
+            self.screen.fill(star[3],(star[0],star[1],star[2],star[2]))            
             
