@@ -98,13 +98,35 @@ class Person(Sprite):
 
 
 class Wasp(Person):
+    image1 = None
+    image2 = None
     def __init__(self, x, y, status, group, sprite="wasp_baddie.png"):
         Person.__init__(self, x, y, status, group, sprite)
         self.direction = 1
         self.newy = self.rect.y+90
         self.health = 5
+        self.frame_update = 0
+        self.frame = 0
+        if self.image1 is None:
+            self.image1 = self.image
+        if self.image2 is None:
+            self.image2 = load_graphics('wasp_baddie_2.png')
                  
     def update(self):
+        if self.frame_update < 5:
+            self.frame_update += 1
+        elif self.frame_update == 5:
+            self.frame = 1
+            self.frame_update += 1
+        elif self.frame_update < 10:
+            self.frame_update += 1
+        else:
+            self.frame = 0
+            self.frame_update = 0
+        if self.frame == 0:
+            self.image = self.image1
+        elif self.frame == 1:
+            self.image = self.image2
         if self.should_update == 2: #gives it that nice old arcade slowness
             self.speed = self.get_speed()
             new_space = self.get_space()
