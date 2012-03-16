@@ -66,6 +66,8 @@ class Game(object):
         self.clock.tick(self.fps)
 
         if self.start_render:
+            self.tittle = Title(100,50,self.screen)
+            self.tittle.draw()
             self.make.start_screen()
             self.make.start_enemies(490, 50, 1, self.enemies)
             self.start_render = False

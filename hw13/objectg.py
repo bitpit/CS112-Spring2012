@@ -24,6 +24,18 @@ def text_render(text,x,y,color,size, surface):
     rend = font.render(text, True, color)
     surface.blit(rend, (x,y))
 
+class Title(Sprite):
+    image = None
+    def __init__(self,x,y,surf):
+        Sprite.__init__(self)
+        if self.image is None:
+            self.image = load_graphics('logo.png')
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.surface = surf
+    def draw(self):
+        self.surface.blit(self.image, (self.rect.x,self.rect.y))
 
 class Keeper(Sprite):
     def __init__(self, surf):
@@ -144,10 +156,13 @@ class Wasp(Person):
     def get_space(self):
         if self.status == 0:
             return (10,0)
-        elif 50 < (self.rect.x+(self.speed*self.direction)) < 540:
+        elif 20 < (self.rect.x+(self.speed*self.direction)) < 540:
             return ((self.speed*self.direction),0)
         elif self.rect.y < self.newy:
             return (0,25)
+        elif self.rect.y == 600:
+            self.kill()
+            return ((0,0))
         else:
             if self.rect.y < 190:
                 Wasp(-15,50,0,self.group)
@@ -270,16 +285,20 @@ class EnemyBullets(Bullet):
 def complex_bullet_algorithm(enemy_group, seed):
         ayn = seed
         length = len(enemy_group)
+        if ayn == 1:
+            rare = 6
+        else:
+            rare = 2
         if length > 5 or length == 5:
             ayn *= 16
         elif length == 4:
             ayn *= 16
         elif length == 3:
-            ayn *= 8
+            ayn *= 13
         elif length == 2:
-            ayn *= 4
+            ayn *= 2*rare
         else:
-            ayn *= 1
+            ayn *= rare
         i = random.randrange(ayn)
         if i == 0:
             return True
