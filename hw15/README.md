@@ -29,6 +29,65 @@ Come up with an elevator pitch (one really descriptive sentence that takes about
 
 Before the end of break, as producers we will "score" the difficulty of each. Then we will green light the project we feel is most reasonable to implement in the time remaining in the course.  If you don't want to get stuck with your throw away idea, make sure you are willing to work on any of the three. You will then need to present this idea on Monday so make sure you flesh out the idea and what is involved.  Also, make a list of what you can bring to the table (art, level design, awesome code) to help find a partner.
 
+***NOTE: sorry about the tardiness of this, i figured since we're on spring break
+that you wouldn't have homework due. how wrong i was..
+
+--------
+## The Mansion ##
+A top down mystery adventure where the player must find the clues to escape a
+haunted mansion before the ghost of Charleton Heston bores them to death
+with tales of senility.
+
+## Genre
+Mystery adventure, in the style of GBC Pokemon games, top down w/ animated sprites,
+perhaps using pre-rendered 3D backgrounds (ala Rez evil 1/2) for special sequences
+
+## Technical Hurdles
+	* moving background unless edge is reached, then switching to moving player
+	* system for tracking clues to escape
+	* saving/loading
+	* other, unforseen hurdles that would undoubtedly arise once work commences
+
+## Other hurdles
+	* designing BG tiles/characters' sprites
+	* making a dang ol good mystery
+	
+	
+-------
+
+## G ##
+Game where the player must traverse a series of levels using the power to change
+the functioning of gravity. Ability to change direction, intensity, etc. of gravity
+will be acquired as powerups throughout the levels
+
+## Genre
+Sidescroller i suppose
+
+## Tehcnical hurdles
+	* many of the same as for 'The Mansion'
+	* additionally, designing a cool physics engine (?) that works for what i want
+		2 do
+		
+## Other hurdles
+	* see mansion
+	
+
+
+------
+
+## Subway Hero ##
+Player is a NYC subway conductor. Duties include making sure no one is 
+standing in the doorways before closing them. and that's it.
+
+## Genre
+High adreneline adventure
+
+
+
+PS - if anyone is doing any sort of street fighter/contra clone, i would be down
+to work on that. also crazy taxi, but i can't imagine that would work too well as
+a 2d game.
+
 ----
 
 ## Prototype Game
