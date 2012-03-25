@@ -10,7 +10,7 @@ from objectg import *
 
 
 class Game(object):
-    title = 'objectg'
+    title = 'Gobject'
     screen_size = 800, 600
     fps = 30
 
@@ -124,6 +124,8 @@ class Game(object):
                 if evt.key == K_SPACE:
                     pygame.key.set_repeat()
                     Bullet(self.ship, self.player_bullets, 1,str('bullet.png'))
+                if self.paused and evt.key == K_q:
+                    self.quit()
             elif evt.type == KEYUP:
                 if evt.key == K_SPACE:
                     pygame.key.set_repeat(45,1)
@@ -188,6 +190,11 @@ class Game(object):
             self.player.draw(self.screen)
             self.enemies.draw(self.screen)
             self.player_health.draw()
+        
+        else:
+            pygame.draw.rect(self.screen,(255,255,255),((10,170),(580,230)))
+            text_render('Paused',80,230,self.black,90,self.screen)
+            text_render('press esc to resume or q to quit', 126,310,self.black,40,self.screen)
                         
         pygame.display.flip()
 
@@ -213,6 +220,8 @@ class Game(object):
                         self.pause(False)
                     elif not self.paused:
                         self.pause(True)
+                if self.paused and evt.key == K_q:
+                    self.quit()
                 if evt.key == K_p:
                     print self.enemy_bullets.sprites()
 
@@ -288,6 +297,11 @@ class Game(object):
             self.player.draw(self.screen)
             self.enemies.draw(self.screen)
             self.player_health.draw()
+
+        else:
+            pygame.draw.rect(self.screen,(255,255,255),((10,170),(580,230)))
+            text_render('Paused',80,230,self.black,90,self.screen)
+            text_render('press esc to resume or q to quit', 126,310,self.black,40,self.screen)
 
         pygame.display.flip()
 
