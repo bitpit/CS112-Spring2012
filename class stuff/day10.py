@@ -21,8 +21,13 @@ screen = pygame.display.set_mode(SCREEN_SIZE)
 ## setup game objects
 bounds = screen.get_rect()
 
+<<<<<<< HEAD
 rect = pygame.Rect((0,0), RECT_SIZE)
 rect.center = bounds.center
+=======
+#Rect = pygame.Rect((0,0), RECT_SIZE)
+#rect.center = bounds.center
+>>>>>>> bdba6e583e5ce28b5e7f29bc000ea1b3dc8a2e87
 
 rects = [pygame.Rect((0,0), RECT_SIZE),
          pygame.Rect((0,0), RECT_SIZE),
