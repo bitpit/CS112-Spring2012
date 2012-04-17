@@ -35,6 +35,7 @@ class QuadTreeTest(unittest.TestCase):
         self.qtree.add_point((25, 25))
         self.qtree.add_point((75, 75))
         self.qtree.add_point((22, 22))
+        print self.qtree.get_points()
         self.assertItemsEqual(self.qtree.get_points(), [(22,22), (75,75), (25,25)], "Incorrect points returned")
 
     # get_rects tests
